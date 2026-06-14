@@ -59,6 +59,15 @@
 | AC-VZ10~11 | e2e | 알림 카드 |
 | AC-VZ12~13 | e2e | 사이드 패널 개폐 |
 | AC-VZ14 | ui parity | 간트 화면 스냅샷 비교 |
+| AC-VZ15 | e2e | 간트 초기 스크롤 TODAY 위치 (Playwright scrollLeft 검증) |
+| AC-VZ16 | e2e | 모바일 카드 리스트 렌더링 (viewport 390×844) |
+| AC-VZ17 | e2e | 바텀 시트 오픈·스와이프 닫기 (모바일 viewport) |
+| AC-VZ18 | e2e | 태블릿+ 우측 패널 유지 (viewport 768×1024) |
+| AC-VZ19 | e2e | 알림 카드 교환완료 버튼 → 다이얼로그 오픈 |
+| AC-VZ20 | e2e | 패널 내 교환완료 기록 버튼 동작 |
+| AC-M12 | e2e | 교환완료 다이얼로그 기본값 (오늘 날짜·현재 km) |
+| AC-M13 | unit + e2e | 교환완료 저장 → MaintenanceRecord 생성 + 상태 재계산 |
+| AC-M14 | e2e | 교환완료 후 알림 카드 즉시 갱신 (ok 전환 시 카드 제거) |
 
 ---
 

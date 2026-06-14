@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정비 스케줄 — 투싼 NX4 하이브리드</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+:root{--bg:#0b0f19;--bg2:#131929;--bg3:#1a2235;--border:#242f45;--text:#dde4f0;--muted:#6b7a99;--mint:#00e5a0;--cyan:#38bdf8;--amber:#fbbf24;--rose:#f87171;--purple:#a78bfa;--orange:#fb923c;--green:#22c55e;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;padding:28px 20px 60px;}
+.hdr{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:28px;}
+.hdr-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--mint);background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);padding:3px 14px;border-radius:999px;}
+.hdr h1{font-size:clamp(20px,4vw,30px);font-weight:700;letter-spacing:-0.5px;}
+.hdr h1 em{color:var(--mint);font-style:normal;}
+.hdr-meta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:4px;}
+.hdr-meta span{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);background:var(--bg3);border:1px solid var(--border);padding:3px 12px;border-radius:6px;}
+.hdr-meta span b{color:var(--text);}
+.vtabs{display:flex;gap:6px;justify-content:center;margin-bottom:22px;}
+.vtab{padding:7px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s;}
+.vtab.active{background:var(--mint);color:#000;border-color:var(--mint);font-weight:700;}
+.nx4-banner{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:12px;padding:14px 18px;margin-bottom:22px;display:flex;gap:12px;align-items:flex-start;}
+.nx4-banner .icon{font-size:20px;flex-shrink:0;}
+.nx4-banner .text{font-size:12px;line-height:1.7;color:var(--text);}
+.nx4-banner .text b{color:var(--amber);}
+.al-title{font-size:10px;letter-spacing:2px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:10px;}
+.al-cards{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;}
+.al-card{flex:1 1 150px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden;cursor:pointer;}
+.al-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.al-card.urgent::before{background:var(--rose);}
+.al-card.soon::before{background:var(--amber);}
+.ac-badge{font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;padding:2px 8px;border-radius:4px;font-weight:700;display:inline-block;margin-bottom:8px;}
+.urgent .ac-badge{background:rgba(248,113,113,.15);color:var(--rose);}
+.soon   .ac-badge{background:rgba(251,191,36,.12);color:var(--amber);}
+.ac-name{font-size:14px;font-weight:700;margin-bottom:3px;}
+.ac-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+.ac-km{font-size:11px;color:var(--muted);margin-top:4px;}
+.gantt-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.gantt-scroll{overflow-x:auto;}
+.gantt-inner{min-width:880px;padding-bottom:20px;}
+.gx-head{display:flex;margin-left:210px;border-bottom:1px solid var(--border);padding:10px 0 8px;position:sticky;top:0;background:var(--bg2);z-index:10;}
+.gx-tick{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);line-height:1.4;}
+.gx-tick.yr-mark{color:var(--text);font-weight:700;}
+.gx-grid-wrap{position:relative;}
+.gx-grid{position:absolute;top:0;bottom:0;left:0;right:0;display:flex;pointer-events:none;margin-left:210px;}
+.gx-cell{flex:1;border-right:1px solid rgba(255,255,255,.04);}
+.gx-cell.yr{border-right-color:rgba(255,255,255,.12);}
+.today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--mint);opacity:.85;z-index:5;pointer-events:none;}
+.today-lbl{position:absolute;top:6px;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mint);background:var(--bg2);padding:1px 5px;border-radius:3px;white-space:nowrap;}
+.gsec-lbl{padding:14px 0 4px 14px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.g-row{display:flex;align-items:center;min-height:42px;margin-bottom:2px;position:relative;cursor:pointer;transition:background .1s;}
+.g-row:hover{background:rgba(0,229,160,.04);}
+.g-lbl{width:210px;flex-shrink:0;padding:0 12px 0 14px;}
+.g-name{font-size:13px;font-weight:500;display:flex;align-items:center;gap:5px;}
+.g-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+.g-dl{font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:2px;}
+.g-bars{flex:1;position:relative;height:42px;}
+.g-chain-bar{position:absolute;top:12px;height:18px;left:0;right:0;border-radius:5px;background:repeating-linear-gradient(90deg,rgba(56,189,248,.15) 0,rgba(56,189,248,.15) 20px,rgba(56,189,248,.05) 20px,rgba(56,189,248,.05) 40px);display:flex;align-items:center;padding-left:10px;}
+.g-chain-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:1px;}
+.g-bar{position:absolute;top:12px;height:18px;border-radius:5px;cursor:pointer;transition:filter .15s;display:flex;align-items:center;overflow:hidden;}
+.g-bar:hover{filter:brightness(1.25);}
+.g-bar-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:rgba(0,0,0,.8);padding:0 5px;white-space:nowrap;overflow:hidden;}
+.g-bar.done{opacity:.3;}
+.g-bar.next{box-shadow:0 0 0 1.5px rgba(255,255,255,.2);}
+.g-bar.future{opacity:.22;}
+.g-pin{position:absolute;top:4px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:4;}
+.g-pin-line{width:0;border-left:2px dashed rgba(255,255,255,.2);height:32px;}
+.g-pin-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text);background:var(--bg3);border:1px solid var(--border);padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:2px;}
+.sec-div{border:none;border-top:1px solid var(--border);margin:4px 0;}
+.tag-nx4{display:inline-block;font-size:8px;font-family:'JetBrains Mono',monospace;background:rgba(251,191,36,.15);color:var(--amber);border-radius:3px;padding:1px 5px;font-weight:700;margin-left:3px;vertical-align:middle;}
+.tag-chain{display:inline-block;font-size:8px;font-family:'JetBrains Mono',monospace;background:rgba(56,189,248,.12);color:var(--cyan);border-radius:3px;padding:1px 5px;font-weight:700;margin-left:3px;vertical-align:middle;}
+.tbl-wrap{overflow-x:auto;background:var(--bg2);border:1px solid var(--border);border-radius:16px;}
+table{width:100%;border-collapse:collapse;min-width:580px;}
+thead th{padding:12px 14px;text-align:left;font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;}
+tbody tr:hover{background:rgba(0,229,160,.03);}
+tbody td{padding:10px 14px;font-size:13px;vertical-align:middle;}
+.td-km{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:12px;}
+.td-dt{font-family:'JetBrains Mono',monospace;font-size:12px;}
+.td-st span{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.s-u{background:rgba(248,113,113,.15);color:var(--rose);}
+.s-s{background:rgba(251,191,36,.12);color:var(--amber);}
+.s-o{background:rgba(34,197,94,.1);color:var(--green);}
+.s-chain{background:rgba(56,189,248,.1);color:var(--cyan);}
+/* 사이드 패널 */
+.panel-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;display:none;backdrop-filter:blur(2px);}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-500px;width:480px;max-width:96vw;height:100vh;background:#0c1220;border-left:1px solid var(--border);z-index:201;display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1);overflow-y:auto;}
+.panel.open{right:0;}
+.panel-head{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;gap:12px;}
+.panel-close{background:none;border:1px solid var(--border);color:var(--muted);font-size:16px;width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.panel-close:hover{color:var(--text);border-color:var(--text);}
+.panel-title-wrap{flex:1;}
+.panel-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;margin-bottom:4px;}
+.panel-title{font-size:22px;font-weight:700;line-height:1.2;}
+.panel-sub{font-size:12px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace;}
+.panel-illust{margin:16px 20px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;}
+.panel-illust svg{display:block;width:100%;height:auto;}
+.panel-body{padding:18px 20px 36px;}
+.psec-title{font-size:10px;letter-spacing:2px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:8px;margin-top:18px;}
+.panel-role{font-size:13px;line-height:1.85;color:var(--text);}
+.panel-role b{color:var(--mint);}
+.panel-role .warn{color:var(--amber);}
+.panel-role .danger{color:var(--rose);}
+.panel-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.pstat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.pstat-label{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.pstat-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;}
+.panel-note{background:rgba(0,229,160,.05);border-left:3px solid var(--mint);padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:var(--muted);line-height:1.7;margin-top:12px;}
+.panel-note b{color:var(--mint);}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:28px;}
+.info-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.info-card h3{font-size:13px;font-weight:700;margin-bottom:8px;}
+.info-card p{font-size:12px;color:var(--muted);line-height:1.75;}
+.info-card p b{color:var(--text);}
+.info-card p .hl{color:var(--mint);}
+.info-card p .warn{color:var(--amber);}
+.info-card p .danger{color:var(--rose);}
+.hint-bar{text-align:center;font-size:11px;color:var(--muted);margin-bottom:14px;padding:8px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-tag">TUCSON HYBRID · NX4 · 스마트스트림 G1.6T · 21년식</div>
+  <h1>내 차 교환 일정 <em>날짜로 보기</em></h1>
+  <div class="hdr-meta">
+    <span>현재 <b>89,660 km</b></span>
+    <span>월 평균 <b>750 km</b></span>
+    <span>기준일 <b>2026-06-14</b></span>
+    <span>최근 교환 <b>2026-06-07</b> — 엔진오일 · 오일필터 · 에어클리너 · 에어컨필터 · 미션오일 · 브레이크오일</span>
+  </div>
+</div>
+<div class="nx4-banner">
+  <div class="icon">⚠️</div>
+  <div class="text"><b>[NX4 HEV 고유 이슈] 엔진오일 가솔린 희석 현상</b><br>
+  단거리 주행 시 냉간 엔진이 가솔린을 오일에 희석시킵니다. 현대 서비스센터 <b>ECU 업그레이드(무상)</b> 필수. 오일 교환 후 2~3주마다 게이지 확인.</div>
+</div>
+<div class="vtabs">
+  <button class="vtab active" onclick="switchView('gantt')">📊 간트 차트</button>
+  <button class="vtab" onclick="switchView('table')">📋 목록 보기</button>
+</div>
+<div id="alertBox"></div>
+<div class="hint-bar">💡 각 항목을 <b>클릭</b>하면 부품 역할 설명 + SVG 일러스트를 볼 수 있습니다</div>
+<div class="gantt-wrap" id="vGantt">
+  <div class="gantt-scroll"><div class="gantt-inner" id="gInner"></div></div>
+</div>
+<div class="tbl-wrap hidden" id="vTable">
+  <table><thead><tr><th>항목</th><th>주기</th><th>최근 교환</th><th>다음 교환 예정일</th><th>예상 km</th><th>상태</th></tr></thead>
+  <tbody id="tBody"></tbody></table>
+</div>
+<div class="info-grid">
+  <div class="info-card"><h3>⛓️ 타이밍체인 — 교체 불필요</h3><p>NX4 G1.6T는 <b>금속 체인 방식</b>. 정기 교체 없음. <span class="warn">오일 관리가 곧 체인 수명</span>. 냉간 이상음 시 즉시 점검.</p></div>
+  <div class="info-card"><h3>🔥 스파크플러그 역할</h3><p><b>고압 불꽃으로 혼합기 점화</b>. GDi 직분사라 카본 퇴적 주의. 단거리 많으면 50K 조기 점검.</p></div>
+  <div class="info-card"><h3>💡 NX4 HEV 핵심 팁</h3><p>① 오일 레벨 수시 확인 ② 주 1회 15분 고속주행 ③ ECU 업그레이드 확인 ④ 인버터 냉각수 <span class="danger">혼용 금지</span> ⑤ SOC 20~80% 유지</p></div>
+  <div class="info-card"><h3>🔧 겉벨트(HSG만 연결)</h3><p>NX4 HEV는 전동 워터펌프+에어컨으로 <b>벨트 부하 최소화</b>. <span class="warn">80K 또는 균열·이상음 시 교환</span>.</p></div>
+</div>
+<!-- 사이드 패널 -->
+<div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="panel" id="sidePanel">
+  <div class="panel-head">
+    <div class="panel-title-wrap">
+      <div class="panel-tag" id="pTag">PART INFO</div>
+      <div class="panel-title" id="pTitle">—</div>
+      <div class="panel-sub" id="pSub">—</div>
+    </div>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-illust" id="pIllust"></div>
+  <div class="panel-body">
+    <div class="psec-title">🔩 이 부품의 역할</div>
+    <div class="panel-role" id="pRole"></div>
+    <div class="psec-title">📅 내 차 교환 정보</div>
+    <div class="panel-stats" id="pStats"></div>
+    <div class="panel-note" id="pNote"></div>
+  </div>
+</div>
+<script>
+const TODAY=new Date(2026,5,14),LAST_EX=new Date(2026,5,7),CUR_KM=89660,MON_KM=750;
+const OIL_KM=CUR_KM-Math.round(MON_KM/30*7);
+const addMon=(d,m)=>{const r=new Date(d);r.setMonth(r.getMonth()+m);return r;};
+const fmtD=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+const fmtM=d=>`${d.getFullYear()}.${p2(d.getMonth()+1)}`;
+function p2(n){return String(n).padStart(2,'0');}
+function monDiff(a,b){return(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth())+(b.getDate()-a.getDate())/31;}
+function dayDiff(a,b){return Math.round((b-a)/86400000);}
+function kmToDate(km){const d=km-CUR_KM;if(d<=0)return new Date(TODAY);return addMon(TODAY,d/MON_KM);}
+const CS=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),TOTAL=36;
+function pD(d){return Math.max(0,Math.min(100,(monDiff(CS,d)/TOTAL)*100));}
+const C={engine:'#00e5a0',hybrid:'#38bdf8',cooling:'#fbbf24',brake:'#f87171',trans:'#a78bfa',filter:'#fb923c',chain:'#38bdf8'};
+
+const SVG_MAP={
+'엔진오일':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="55" y="38" width="72" height="102" rx="8" fill="#1e3a5f" stroke="#38bdf8" stroke-width="1.5"/><rect x="55" y="38" width="72" height="22" rx="8" fill="#2563a8"/><text x="91" y="54" text-anchor="middle" fill="white" font-size="10" font-family="monospace" font-weight="bold">0W-20</text><text x="91" y="74" text-anchor="middle" fill="#38bdf8" font-size="9" font-family="monospace">HEV 전용</text><rect x="63" y="80" width="55" height="5" rx="2" fill="#38bdf8" opacity=".4"/><rect x="63" y="92" width="55" height="5" rx="2" fill="#38bdf8" opacity=".3"/><rect x="63" y="104" width="55" height="5" rx="2" fill="#38bdf8" opacity=".2"/><text x="91" y="150" text-anchor="middle" fill="#6b7a99" font-size="9" font-family="monospace">엔진오일통</text><rect x="168" y="28" width="200" height="134" rx="6" fill="#1a2235" stroke="#00e5a0" stroke-width="1.5"/><rect x="182" y="48" width="36" height="82" rx="3" fill="#0d1117" stroke="#374151"/><rect x="228" y="48" width="36" height="82" rx="3" fill="#0d1117" stroke="#374151"/><rect x="274" y="48" width="36" height="82" rx="3" fill="#0d1117" stroke="#374151"/><rect x="185" y="96" width="30" height="16" rx="2" fill="#4b5563" stroke="#6b7a99"/><rect x="231" y="78" width="30" height="16" rx="2" fill="#4b5563" stroke="#6b7a99"/><rect x="277" y="90" width="30" height="16" rx="2" fill="#4b5563" stroke="#6b7a99"/><text x="268" y="20" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">엔진 내부 단면</text><path d="M127 90 Q148 90 168 90" stroke="#00e5a0" stroke-width="2" fill="none" stroke-dasharray="4 3"/><polygon points="166,86 174,90 166,94" fill="#00e5a0"/><text x="148" y="82" fill="#00e5a0" font-size="9" font-family="monospace">윤활 공급</text><rect x="168" y="157" width="200" height="10" rx="2" fill="#00e5a0" opacity=".15" stroke="#00e5a0"/><text x="268" y="165" text-anchor="middle" fill="#00e5a0" font-size="7" font-family="monospace">OIL PAN</text><text x="91" y="18" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">엔진오일</text></svg>`,
+
+'오일필터':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><ellipse cx="162" cy="90" rx="52" ry="66" fill="#1a2235" stroke="#00e5a0" stroke-width="2"/><ellipse cx="162" cy="90" rx="42" ry="56" fill="#0d1117" stroke="#374151"/><ellipse cx="162" cy="90" rx="30" ry="44" fill="none" stroke="#00e5a0" opacity=".5" stroke-width="1"/><ellipse cx="162" cy="90" rx="18" ry="32" fill="none" stroke="#00e5a0" opacity=".3" stroke-width="1"/><ellipse cx="162" cy="90" rx="8" ry="20" fill="none" stroke="#00e5a0" opacity=".2" stroke-width="1"/><rect x="150" y="152" width="24" height="12" rx="2" fill="#374151" stroke="#6b7a99"/><path d="M60 80 Q104 80 112 80" stroke="#f87171" stroke-width="2" fill="none" stroke-dasharray="3 2"/><polygon points="110,76 118,80 110,84" fill="#f87171"/><text x="45" y="72" fill="#f87171" font-size="8" font-family="monospace" text-anchor="middle">오염된</text><text x="45" y="83" fill="#f87171" font-size="8" font-family="monospace" text-anchor="middle">오일 유입</text><path d="M212 80 Q250 80 270 80" stroke="#00e5a0" stroke-width="2" fill="none" stroke-dasharray="3 2"/><polygon points="268,76 276,80 268,84" fill="#00e5a0"/><text x="300" y="72" fill="#00e5a0" font-size="8" font-family="monospace" text-anchor="middle">정화된</text><text x="300" y="83" fill="#00e5a0" font-size="8" font-family="monospace" text-anchor="middle">오일 공급</text><circle cx="148" cy="78" r="2.5" fill="#6b7a99"/><circle cx="162" cy="96" r="2" fill="#6b7a99"/><circle cx="172" cy="70" r="2" fill="#6b7a99"/><circle cx="155" cy="110" r="1.5" fill="#6b7a99"/><text x="162" y="18" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">오일필터 단면</text><text x="162" y="174" text-anchor="middle" fill="#6b7a99" font-size="9" font-family="monospace">금속 분진·슬러지 차단</text></svg>`,
+
+'스파크플러그':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="188" y="18" width="28" height="18" rx="2" fill="#374151" stroke="#6b7a99" stroke-width="1.5"/><polygon points="188,36 216,36 222,54 182,54" fill="#4b5563" stroke="#6b7a99" stroke-width="1"/><rect x="193" y="54" width="18" height="56" rx="5" fill="#e8e4d8" stroke="#9ca3af" stroke-width="1"/><rect x="190" y="100" width="24" height="36" rx="2" fill="#374151" stroke="#6b7a99" stroke-width="1.5"/><rect x="201" y="136" width="4" height="12" fill="#9ca3af"/><rect x="197" y="145" width="12" height="4" rx="1" fill="#6b7a99"/><rect x="202" y="108" width="4" height="30" fill="#fbbf24"/><rect x="202" y="140" width="4" height="4" fill="#38bdf8"/><path d="M208 142 L222 128 L216 135 L230 118" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="219" cy="132" r="12" fill="rgba(251,191,36,.12)" stroke="#fbbf24" stroke-width="1" opacity=".4"/><text x="100" y="48" fill="#a78bfa" font-size="12" font-family="monospace" font-weight="bold">고압전기</text><path d="M136 46 Q162 46 182 38" stroke="#a78bfa" stroke-width="1.5" fill="none" stroke-dasharray="3 2"/><text x="290" y="122" fill="#fbbf24" font-size="11" font-family="sans-serif">🔥 점화!</text><text x="290" y="137" fill="#6b7a99" font-size="9" font-family="monospace">공기+연료</text><text x="290" y="150" fill="#6b7a99" font-size="9" font-family="monospace">혼합기 착화</text><text x="60" y="150" fill="#38bdf8" font-size="9" font-family="monospace">이리듐 팁</text><path d="M96 148 Q145 145 201 143" stroke="#38bdf8" stroke-width="1" fill="none"/><text x="204" y="14" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">스파크플러그 구조</text></svg>`,
+
+'타이밍체인':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><circle cx="120" cy="130" r="32" fill="none" stroke="#38bdf8" stroke-width="2"/><circle cx="120" cy="130" r="26" fill="#1a2235" stroke="#374151"/><circle cx="120" cy="130" r="10" fill="#374151" stroke="#6b7a99" stroke-width="1.5"/><circle cx="295" cy="72" r="46" fill="none" stroke="#38bdf8" stroke-width="2"/><circle cx="295" cy="72" r="38" fill="#1a2235" stroke="#374151"/><circle cx="295" cy="72" r="14" fill="#374151" stroke="#6b7a99" stroke-width="1.5"/><path d="M120 98 Q130 55 200 36 Q250 22 295 26" stroke="#6b7a99" stroke-width="5" fill="none" stroke-dasharray="6 3"/><path d="M120 98 Q130 55 200 36 Q250 22 295 26" stroke="#38bdf8" stroke-width="2.5" fill="none" opacity=".6"/><path d="M120 162 Q155 175 245 158 Q270 148 295 118" stroke="#6b7a99" stroke-width="5" fill="none" stroke-dasharray="6 3"/><path d="M120 162 Q155 175 245 158 Q270 148 295 118" stroke="#38bdf8" stroke-width="2.5" fill="none" opacity=".6"/><rect x="185" y="76" width="14" height="36" rx="4" fill="#1e3a5f" stroke="#38bdf8" stroke-width="1"/><text x="199" y="100" fill="#38bdf8" font-size="7" font-family="monospace">텐셔너</text><rect x="18" y="18" width="88" height="32" rx="8" fill="rgba(56,189,248,.12)" stroke="#38bdf8"/><text x="62" y="31" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="bold">교체 불필요</text><text x="62" y="43" text-anchor="middle" fill="#38bdf8" font-size="9" font-family="monospace">금속 체인</text><text x="100" y="155" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">크랭크 스프로킷</text><text x="295" y="130" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">캠 스프로킷</text><text x="210" y="14" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">타이밍체인 시스템</text></svg>`,
+
+'겉벨트(HSG)':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><circle cx="100" cy="110" r="35" fill="none" stroke="#00e5a0" stroke-width="2"/><circle cx="100" cy="110" r="27" fill="#1a2235" stroke="#374151"/><circle cx="100" cy="110" r="10" fill="#374151"/><text x="100" y="157" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">크랭크</text><circle cx="300" cy="78" r="42" fill="none" stroke="#00e5a0" stroke-width="2"/><circle cx="300" cy="78" r="34" fill="#1a2235" stroke="#374151"/><circle cx="300" cy="78" r="13" fill="#374151"/><text x="300" y="132" text-anchor="middle" fill="#00e5a0" font-size="11" font-weight="bold">HSG</text><text x="300" y="143" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">모터/발전기</text><path d="M100 75 Q140 28 240 40 Q272 44 300 36" stroke="#fbbf24" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M100 145 Q150 165 235 145 Q265 132 300 120" stroke="#fbbf24" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="192" cy="158" r="16" fill="#1a2235" stroke="#f87171" stroke-width="1.5"/><line x1="184" y1="150" x2="200" y2="166" stroke="#f87171" stroke-width="2"/><line x1="200" y1="150" x2="184" y2="166" stroke="#f87171" stroke-width="2"/><text x="192" y="175" text-anchor="middle" fill="#f87171" font-size="7" font-family="monospace">워터펌프(전동·분리)</text><rect x="18" y="20" width="80" height="32" rx="6" fill="rgba(0,229,160,.08)" stroke="#00e5a0"/><text x="58" y="33" text-anchor="middle" fill="#00e5a0" font-size="9" font-family="monospace">HEV 전용</text><text x="58" y="44" text-anchor="middle" fill="#00e5a0" font-size="8" font-family="monospace">HSG만 연결</text><text x="210" y="14" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">겉벨트(서펜타인) — NX4 HEV</text></svg>`,
+
+'에어클리너':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="58" y="48" width="138" height="94" rx="8" fill="#1a2235" stroke="#fb923c" stroke-width="2"/><rect x="72" y="62" width="110" height="66" rx="4" fill="#0d1117"/><g stroke="#fb923c" stroke-width="1" opacity=".5"><line x1="80" y1="62" x2="80" y2="128"/><line x1="90" y1="62" x2="90" y2="128"/><line x1="100" y1="62" x2="100" y2="128"/><line x1="110" y1="62" x2="110" y2="128"/><line x1="120" y1="62" x2="120" y2="128"/><line x1="130" y1="62" x2="130" y2="128"/><line x1="140" y1="62" x2="140" y2="128"/><line x1="150" y1="62" x2="150" y2="128"/><line x1="160" y1="62" x2="160" y2="128"/><line x1="170" y1="62" x2="170" y2="128"/><line x1="178" y1="62" x2="178" y2="128"/></g><text x="28" y="82" fill="#f87171" font-size="8" font-family="monospace" text-anchor="middle">먼지·이물질</text><path d="M46 90 Q58 90 72 90" stroke="#f87171" stroke-width="2" fill="none"/><polygon points="70,86 78,90 70,94" fill="#f87171"/><path d="M196 90 Q230 90 256 90" stroke="#00e5a0" stroke-width="2" fill="none"/><polygon points="254,86 262,90 254,94" fill="#00e5a0"/><text x="286" y="82" fill="#00e5a0" font-size="8" font-family="monospace">정화된</text><text x="286" y="93" fill="#00e5a0" font-size="8" font-family="monospace">흡기 공기</text><rect x="305" y="70" width="80" height="46" rx="6" fill="#1a2235" stroke="#374151" stroke-width="1.5"/><text x="345" y="98" text-anchor="middle" fill="#6b7a99" font-size="11">엔진</text><path d="M262 90 Q282 90 305 90" stroke="#00e5a0" stroke-width="2" fill="none"/><polygon points="303,86 311,90 303,94" fill="#00e5a0"/><text x="127" y="32" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">에어클리너</text><text x="127" y="157" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">먼지·이물질 차단 → 엔진 보호</text></svg>`,
+
+'에어컨필터':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="142" y="43" width="136" height="94" rx="8" fill="#1a2235" stroke="#fb923c" stroke-width="2"/><rect x="156" y="56" width="108" height="18" rx="2" fill="#2d3748" stroke="#fb923c" opacity=".8"/><text x="210" y="69" text-anchor="middle" fill="#fb923c" font-size="7.5" font-family="monospace">활성탄 탈취층</text><rect x="156" y="78" width="108" height="18" rx="2" fill="#1e3a5f" stroke="#38bdf8" opacity=".8"/><text x="210" y="91" text-anchor="middle" fill="#38bdf8" font-size="7.5" font-family="monospace">정전 필터층</text><rect x="156" y="100" width="108" height="18" rx="2" fill="#374151" stroke="#6b7a99" opacity=".8"/><text x="210" y="113" text-anchor="middle" fill="#6b7a99" font-size="7.5" font-family="monospace">부직포 필터층</text><text x="66" y="80" fill="#f87171" font-size="8" font-family="monospace" text-anchor="middle">PM2.5 황사</text><text x="66" y="91" fill="#f87171" font-size="8" font-family="monospace" text-anchor="middle">꽃가루·세균</text><path d="M96 90 Q118 90 142 90" stroke="#f87171" stroke-width="1.5" fill="none"/><polygon points="140,86 148,90 140,94" fill="#f87171"/><path d="M278 90 Q308 90 328 90" stroke="#00e5a0" stroke-width="1.5" fill="none"/><polygon points="326,86 334,90 326,94" fill="#00e5a0"/><text x="358" y="83" fill="#00e5a0" font-size="8" font-family="monospace">실내</text><text x="358" y="94" fill="#00e5a0" font-size="8" font-family="monospace">청정 공기</text><rect x="330" y="56" width="58" height="26" rx="4" fill="#1a2235" stroke="#374151"/><text x="359" y="73" text-anchor="middle" fill="#6b7a99" font-size="9">HVAC</text><text x="210" y="28" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">에어컨(실내) 필터</text><text x="210" y="155" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">봄·가을 연 2회 | PM2.5·황사·꽃가루·세균 차단</text></svg>`,
+
+'변속기오일':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="98" y="28" width="224" height="124" rx="10" fill="#1a2235" stroke="#a78bfa" stroke-width="2"/><circle cx="180" cy="82" r="32" fill="none" stroke="#a78bfa" stroke-width="2"/><circle cx="180" cy="82" r="26" fill="#1a2235" stroke="#374151"/><circle cx="252" cy="96" r="22" fill="none" stroke="#a78bfa" stroke-width="2"/><circle cx="252" cy="96" r="17" fill="#1a2235" stroke="#374151"/><circle cx="180" cy="82" r="9" fill="#374151"/><circle cx="252" cy="96" r="7" fill="#374151"/><g stroke="#a78bfa" stroke-width="2"><line x1="180" y1="50" x2="180" y2="44"/><line x1="198" y1="56" x2="202" y2="50"/><line x1="212" y1="70" x2="216" y2="67"/><line x1="212" y1="94" x2="216" y2="97"/><line x1="198" y1="108" x2="202" y2="114"/><line x1="180" y1="114" x2="180" y2="120"/><line x1="162" y1="108" x2="158" y2="114"/><line x1="148" y1="94" x2="144" y2="97"/><line x1="148" y1="70" x2="144" y2="67"/><line x1="162" y1="56" x2="158" y2="50"/></g><path d="M140 138 Q210 152 282 138" stroke="#a78bfa" stroke-width="1.5" fill="none" opacity=".5"/><text x="210" y="152" text-anchor="middle" fill="#a78bfa" font-size="7.5" font-family="monospace">ATF 순환 (윤활·냉각·유압)</text><rect x="106" y="36" width="36" height="18" rx="4" fill="rgba(167,139,250,.15)" stroke="#a78bfa"/><text x="124" y="49" text-anchor="middle" fill="#a78bfa" font-size="10" font-family="monospace" font-weight="bold">6AT</text><text x="210" y="18" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">변속기(ATF) 구조</text></svg>`,
+
+'브레이크오일':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="48" y="58" width="72" height="42" rx="5" fill="#1a2235" stroke="#f87171" stroke-width="2"/><rect x="58" y="38" width="52" height="24" rx="4" fill="#1e3a5f" stroke="#f87171" stroke-width="1.5"/><text x="84" y="24" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">리저버 탱크</text><text x="84" y="112" text-anchor="middle" fill="#f87171" font-size="8" font-family="monospace">마스터 실린더</text><path d="M120 78 Q200 78 200 105 Q200 134 262 134" stroke="#f87171" stroke-width="3" fill="none"/><path d="M120 78 Q200 78 200 62 Q200 38 262 38" stroke="#f87171" stroke-width="3" fill="none"/><rect x="262" y="23" width="72" height="30" rx="5" fill="#1a2235" stroke="#f87171" stroke-width="1.5"/><rect x="274" y="33" width="48" height="12" rx="2" fill="#374151"/><text x="298" y="70" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">앞 캘리퍼</text><rect x="262" y="120" width="72" height="30" rx="5" fill="#1a2235" stroke="#f87171" stroke-width="1.5"/><rect x="274" y="130" width="48" height="12" rx="2" fill="#374151"/><text x="298" y="165" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">뒤 캘리퍼</text><rect x="348" y="70" width="58" height="30" rx="6" fill="rgba(0,229,160,.1)" stroke="#00e5a0"/><text x="377" y="83" text-anchor="middle" fill="#00e5a0" font-size="8">회생제동</text><text x="377" y="94" text-anchor="middle" fill="#00e5a0" font-size="8">HEV 유리</text><rect x="138" y="52" width="48" height="16" rx="4" fill="rgba(248,113,113,.12)" stroke="#f87171"/><text x="162" y="64" text-anchor="middle" fill="#f87171" font-size="9" font-family="monospace">DOT 4</text><text x="210" y="14" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">브레이크 유압 시스템</text></svg>`,
+
+'브레이크패드':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><circle cx="210" cy="90" r="72" fill="none" stroke="#f87171" stroke-width="2.5"/><circle cx="210" cy="90" r="58" fill="#1a2235" stroke="#374151" stroke-width="1.5"/><circle cx="210" cy="90" r="18" fill="#374151" stroke="#f87171" stroke-width="1.5"/><rect x="274" y="65" width="52" height="50" rx="5" fill="#374151" stroke="#f87171" stroke-width="2"/><rect x="277" y="68" width="46" height="44" rx="3" fill="#4b5563"/><rect x="88" y="65" width="52" height="50" rx="5" fill="#374151" stroke="#f87171" stroke-width="2"/><rect x="91" y="68" width="46" height="44" rx="3" fill="#4b5563"/><text x="300" y="95" text-anchor="middle" fill="#f87171" font-size="9" font-family="monospace">패드</text><text x="114" y="95" text-anchor="middle" fill="#f87171" font-size="9" font-family="monospace">패드</text><rect x="152" y="152" width="116" height="20" rx="5" fill="rgba(0,229,160,.1)" stroke="#00e5a0"/><text x="210" y="166" text-anchor="middle" fill="#00e5a0" font-size="8.5" font-family="monospace">HEV 회생제동 → 약 2배 수명</text><text x="210" y="18" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">브레이크 패드 &amp; 디스크</text></svg>`,
+
+'브레이크디스크':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><circle cx="210" cy="90" r="74" fill="none" stroke="#f87171" stroke-width="2.5"/><circle cx="210" cy="90" r="60" fill="#1a2235" stroke="#374151" stroke-width="1.5"/><circle cx="210" cy="90" r="20" fill="#374151" stroke="#f87171" stroke-width="1.5"/><circle cx="210" cy="62" r="4" fill="#0d1117" stroke="#6b7a99"/><circle cx="234" cy="76" r="4" fill="#0d1117" stroke="#6b7a99"/><circle cx="228" cy="108" r="4" fill="#0d1117" stroke="#6b7a99"/><circle cx="192" cy="108" r="4" fill="#0d1117" stroke="#6b7a99"/><circle cx="186" cy="76" r="4" fill="#0d1117" stroke="#6b7a99"/><g fill="none" stroke="#6b7a99" stroke-width="1.5" opacity=".5"><line x1="210" y1="36" x2="210" y2="48"/><line x1="238" y1="46" x2="232" y2="56"/><line x1="258" y1="68" x2="249" y2="74"/><line x1="265" y1="95" x2="253" y2="95"/><line x1="256" y1="122" x2="246" y2="116"/><line x1="234" y1="140" x2="228" y2="130"/><line x1="210" y1="148" x2="210" y2="136"/><line x1="182" y1="140" x2="188" y2="130"/><line x1="160" y1="122" x2="170" y2="116"/><line x1="152" y1="95" x2="164" y2="95"/><line x1="158" y1="68" x2="167" y2="74"/><line x1="178" y1="46" x2="184" y2="56"/></g><text x="75" y="88" fill="#f87171" font-size="8" text-anchor="middle" font-family="monospace">두께 점검</text><text x="75" y="99" fill="#f87171" font-size="8" text-anchor="middle" font-family="monospace">필요</text><text x="210" y="16" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">브레이크 디스크(로터)</text><text x="210" y="165" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">패드 마찰로 제동력 발생 | 패드 2회 교환마다 두께 점검</text></svg>`,
+
+'타이어':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><circle cx="210" cy="90" r="80" fill="#1a1a1a" stroke="#f87171" stroke-width="2.5"/><circle cx="210" cy="90" r="60" fill="#111827" stroke="#374151" stroke-width="2"/><circle cx="210" cy="90" r="50" fill="#1a2235" stroke="#6b7a99" stroke-width="1.5"/><circle cx="210" cy="90" r="16" fill="#374151" stroke="#f87171" stroke-width="1.5"/><g stroke="#4b5563" stroke-width="3.5" stroke-linecap="round"><line x1="210" y1="74" x2="210" y2="48"/><line x1="225" y1="78" x2="238" y2="56"/><line x1="230" y1="90" x2="256" y2="90"/><line x1="225" y1="102" x2="238" y2="124"/><line x1="210" y1="106" x2="210" y2="132"/><line x1="195" y1="102" x2="182" y2="124"/><line x1="190" y1="90" x2="164" y2="90"/><line x1="195" y1="78" x2="182" y2="56"/></g><rect x="20" y="62" width="82" height="52" rx="6" fill="#1a2235" stroke="#f87171" stroke-width="1"/><text x="61" y="82" text-anchor="middle" fill="#f87171" font-size="9" font-family="monospace">트레드 깊이</text><text x="61" y="96" text-anchor="middle" fill="#00e5a0" font-size="12" font-family="monospace" font-weight="bold">≥1.6mm</text><text x="61" y="108" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">법적 기준</text><text x="210" y="14" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">타이어</text></svg>`,
+
+'타이어 로테이션':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="160" y="20" width="100" height="140" rx="15" fill="#1a2235" stroke="#374151" stroke-width="1.5"/><rect x="128" y="28" width="32" height="52" rx="5" fill="#1e3a5f" stroke="#fb923c" stroke-width="2"/><rect x="260" y="28" width="32" height="52" rx="5" fill="#1e3a5f" stroke="#fb923c" stroke-width="2"/><rect x="128" y="100" width="32" height="52" rx="5" fill="#374151" stroke="#f87171" stroke-width="2"/><rect x="260" y="100" width="32" height="52" rx="5" fill="#374151" stroke="#f87171" stroke-width="2"/><path d="M144 80 Q96 90 144 112" stroke="#00e5a0" stroke-width="2" fill="none" stroke-dasharray="4 3"/><polygon points="141,108 146,117 150,108" fill="#00e5a0"/><path d="M276 80 Q324 90 276 112" stroke="#00e5a0" stroke-width="2" fill="none" stroke-dasharray="4 3"/><polygon points="273,108 278,117 282,108" fill="#00e5a0"/><path d="M144 28 Q86 16 86 90 Q86 162 276 152" stroke="#fbbf24" stroke-width="1.5" fill="none" stroke-dasharray="5 3"/><polygon points="272,148 279,155 279,146" fill="#fbbf24"/><text x="144" y="56" text-anchor="middle" fill="#fb923c" font-size="9" font-family="monospace">앞</text><text x="276" y="56" text-anchor="middle" fill="#fb923c" font-size="9" font-family="monospace">앞</text><text x="144" y="128" text-anchor="middle" fill="#f87171" font-size="9" font-family="monospace">뒤</text><text x="276" y="128" text-anchor="middle" fill="#f87171" font-size="9" font-family="monospace">뒤</text><text x="210" y="14" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">타이어 로테이션 패턴</text><text x="210" y="172" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">10,000km마다 전후 교환 → 편마모 방지</text></svg>`,
+
+'냉각수':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="28" y="38" width="82" height="114" rx="6" fill="#1a2235" stroke="#fbbf24" stroke-width="2"/><g stroke="#fbbf24" stroke-width="1" opacity=".4"><line x1="28" y1="58" x2="110" y2="58"/><line x1="28" y1="74" x2="110" y2="74"/><line x1="28" y1="90" x2="110" y2="90"/><line x1="28" y1="106" x2="110" y2="106"/><line x1="28" y1="122" x2="110" y2="122"/><line x1="28" y1="138" x2="110" y2="138"/></g><text x="69" y="164" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">라디에이터</text><rect x="278" y="44" width="110" height="100" rx="8" fill="#1a2235" stroke="#fbbf24" stroke-width="2"/><text x="333" y="98" text-anchor="middle" fill="#6b7a99" font-size="12">엔진</text><circle cx="210" cy="122" r="22" fill="#1e3a5f" stroke="#fbbf24" stroke-width="1.5"/><text x="210" y="118" text-anchor="middle" fill="#fbbf24" font-size="7" font-family="monospace">워터</text><text x="210" y="129" text-anchor="middle" fill="#fbbf24" font-size="7" font-family="monospace">펌프</text><path d="M110 62 Q192 62 278 62" stroke="#f87171" stroke-width="2.5" fill="none"/><polygon points="276,58 284,62 276,66" fill="#f87171"/><text x="194" y="55" fill="#f87171" font-size="8" font-family="monospace">고온</text><path d="M278 135 Q243 135 232 135 Q220 135 210 144" stroke="#38bdf8" stroke-width="2.5" fill="none"/><path d="M210 100 Q210 80 140 80 Q125 80 110 100" stroke="#38bdf8" stroke-width="2.5" fill="none"/><text x="145" y="110" fill="#38bdf8" font-size="8" font-family="monospace">냉각됨</text><text x="210" y="16" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">엔진 냉각수 순환 경로</text></svg>`,
+
+'인버터 냉각수':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="42" y="48" width="92" height="62" rx="8" fill="#1a2235" stroke="#38bdf8" stroke-width="2"/><text x="88" y="76" text-anchor="middle" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">인버터</text><text x="88" y="90" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">AC↔DC</text><rect x="162" y="42" width="96" height="74" rx="8" fill="#1e3a5f" stroke="#38bdf8" stroke-width="2"/><text x="210" y="72" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="bold">HV 배터리</text><text x="210" y="88" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">고전압</text><rect x="286" y="48" width="92" height="62" rx="8" fill="#1a2235" stroke="#38bdf8" stroke-width="2"/><text x="332" y="76" text-anchor="middle" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">모터</text><text x="332" y="90" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">HSG</text><path d="M134 79 Q148 79 162 79" stroke="#38bdf8" stroke-width="2.5" fill="none"/><polygon points="160,75 168,79 160,83" fill="#38bdf8"/><path d="M258 79 Q272 79 286 79" stroke="#38bdf8" stroke-width="2.5" fill="none"/><polygon points="284,75 292,79 284,83" fill="#38bdf8"/><path d="M378 110 Q378 148 210 148 Q42 148 42 110" stroke="#38bdf8" stroke-width="2" fill="none" stroke-dasharray="4 3"/><rect x="152" y="130" width="116" height="28" rx="6" fill="rgba(248,113,113,.1)" stroke="#f87171" stroke-width="1.5"/><text x="210" y="143" text-anchor="middle" fill="#f87171" font-size="9" font-family="monospace">⛔ 일반 냉각수 혼용금지</text><text x="210" y="153" text-anchor="middle" fill="#f87171" font-size="8" font-family="monospace">HEV 전용 LLC만!</text><text x="210" y="16" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">인버터 냉각 시스템 (HEV 전용)</text></svg>`,
+
+'12V 보조배터리':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="115" y="48" width="190" height="104" rx="8" fill="#1a2235" stroke="#38bdf8" stroke-width="2"/><g fill="#374151" stroke="#6b7a99" stroke-width="1"><rect x="130" y="64" width="20" height="72" rx="2"/><rect x="156" y="64" width="20" height="72" rx="2"/><rect x="182" y="64" width="20" height="72" rx="2"/><rect x="208" y="64" width="20" height="72" rx="2"/><rect x="234" y="64" width="20" height="72" rx="2"/><rect x="260" y="64" width="20" height="72" rx="2"/></g><rect x="145" y="36" width="26" height="16" rx="3" fill="#f87171" stroke="#f87171"/><text x="158" y="48" text-anchor="middle" fill="white" font-size="11" font-family="monospace" font-weight="bold">+</text><rect x="249" y="36" width="26" height="16" rx="3" fill="#6b7a99" stroke="#6b7a99"/><text x="262" y="48" text-anchor="middle" fill="white" font-size="11" font-family="monospace" font-weight="bold">−</text><rect x="44" y="110" width="68" height="30" rx="5" fill="rgba(251,191,36,.1)" stroke="#fbbf24"/><text x="78" y="123" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">HEV 특성상</text><text x="78" y="134" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">빠른 열화</text><path d="M112 124 Q115 124 115 95" stroke="#38bdf8" stroke-width="1.5" fill="none" stroke-dasharray="3 2"/><text x="210" y="162" text-anchor="middle" fill="#6b7a99" font-size="8" font-family="monospace">12V 전장계 전원 공급 | 4년 교환 권장</text><text x="210" y="22" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">12V 보조배터리</text></svg>`,
+
+'고전압배터리 점검':`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><rect x="58" y="38" width="304" height="92" rx="10" fill="#1a2235" stroke="#38bdf8" stroke-width="2.5"/><g fill="#1e3a5f" stroke="#38bdf8" stroke-width="1"><rect x="72" y="52" width="24" height="62" rx="3"/><rect x="102" y="52" width="24" height="62" rx="3"/><rect x="132" y="52" width="24" height="62" rx="3"/><rect x="162" y="52" width="24" height="62" rx="3"/><rect x="192" y="52" width="24" height="62" rx="3"/><rect x="222" y="52" width="24" height="62" rx="3"/><rect x="252" y="52" width="24" height="62" rx="3"/><rect x="282" y="52" width="24" height="62" rx="3"/><rect x="312" y="52" width="24" height="62" rx="3"/></g><rect x="72" y="142" width="276" height="14" rx="4" fill="#0d1117" stroke="#374151"/><rect x="72" y="142" width="166" height="14" rx="4" fill="#00e5a0"/><text x="155" y="152" text-anchor="middle" fill="#000" font-size="8" font-family="monospace" font-weight="bold">60%</text><line x1="127" y1="140" x2="127" y2="158" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2 2"/><line x1="293" y1="140" x2="293" y2="158" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2 2"/><text x="127" y="168" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">20%</text><text x="293" y="168" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">80%</text><text x="40" y="86" fill="#fbbf24" font-size="20" text-anchor="middle">⚡</text><text x="380" y="86" fill="#fbbf24" font-size="20" text-anchor="middle">⚡</text><text x="210" y="22" text-anchor="middle" fill="#dde4f0" font-size="11" font-weight="bold">고전압 배터리 팩 (HEV)</text><text x="210" y="177" text-anchor="middle" fill="#00e5a0" font-size="8" font-family="monospace">★ SOC 20~80% 최적 운용 구간 ★</text></svg>`
+};
+
+const ROLES_MAP={
+'엔진오일':`엔진 내부의 금속 부품들이 초고속으로 맞닿아 움직입니다. <b>엔진오일은 금속 사이에 얇은 막을 형성해 마찰·마모를 방지</b>하고, 연소열을 흡수해 냉각하며, 불순물을 세정·분산시킵니다.<br><br><span class="warn">NX4 HEV 주의:</span> 단거리 냉간 주행이 잦으면 가솔린이 오일에 희석돼 점도가 떨어집니다. <b>오일 레벨이 늘어나면 즉시 교환</b>하세요.`,
+'오일필터':`엔진오일이 순환하면서 금속 마모 입자, 카본 슬러지, 연소 불순물을 흡수합니다. <b>오일필터는 이 불순물들을 걸러내어 깨끗한 오일만 엔진에 공급</b>합니다.<br><br>필터가 막히면 불순물이 섞인 오일이 그대로 순환해 <span class="warn">마모와 슬러지 축적</span>이 가속됩니다. 엔진오일과 <b>반드시 세트 교환</b>이 원칙입니다.`,
+'스파크플러그':`실린더 내부의 공기+연료 혼합기에 <b>1만~3만 볼트 고압 불꽃을 튀겨 점화</b>시킵니다. 이 폭발이 피스톤을 밀어 동력이 발생합니다.<br><br>노후화되면 <span class="warn">불꽃 약화 → 불완전 연소 → 연비 악화·출력 저하·진동 증가</span>. NX4 G4FJ는 GDi 직분사라 흡기 카본 퇴적에도 주의하세요.`,
+'타이밍체인':`크랭크샤프트(피스톤 운동)와 캠샤프트(밸브 개폐)의 <b>타이밍을 정밀하게 동기화</b>합니다. 타이밍이 어긋나면 밸브-피스톤 충돌로 엔진이 파손됩니다.<br><br>NX4 G1.6T는 <b>금속 체인 방식 → 정기 교체 없음</b>. 하지만 <span class="warn">엔진오일 부족 시 텐셔너 손상</span>. 냉간 이상음 발생 시 즉시 점검하세요.`,
+'겉벨트(HSG)':`크랭크샤프트의 회전력을 <b>HSG(하이브리드 스타터 제너레이터 — 모터 겸 발전기)</b>에 전달합니다.<br><br>NX4 HEV는 워터펌프·에어컨이 전동식이라 <b>벨트 부하 최소</b>. 하지만 끊어지면 <span class="warn">HSG 정지 → 발전 불가 → HV 배터리 방전 위험</span>이 있습니다.`,
+'에어클리너':`외부 공기에서 <b>먼지·모래·이물질을 걸러 엔진을 보호</b>합니다. 이물질이 들어가면 실린더 벽과 피스톤을 긁어 <span class="warn">마모·오일 소모 증가·출력 저하</span>가 발생합니다.<br><br>막히면 <span class="warn">공기 부족 → 연비 악화·검은 매연</span>. 황사 심한 봄은 30K로 앞당겨 교환하세요.`,
+'에어컨필터':`실내로 유입되는 외부 공기에서 <b>PM2.5 미세먼지·황사·꽃가루·세균·악취를 차단</b>합니다. 부직포 → 정전 필터 → 활성탄 다층 구조입니다.<br><br>막히면 <span class="warn">풍량 감소·불쾌한 냄새·세균·곰팡이 실내 유입</span>. 봄·가을 연 2회 교환이 기본입니다.`,
+'변속기오일':`변속기 내부 기어·클러치·토크컨버터를 <b>윤활·냉각</b>하고, 변속 시 <b>유압을 형성해 클러치 팩을 작동</b>시킵니다.<br><br>열화된 오일은 <span class="warn">변속 충격·슬립·변속 지연</span>을 유발합니다. 제조사의 "무교환" 주장과 달리 <b>60,000km 교환이 장기 운용의 비결</b>입니다.`,
+'브레이크오일':`페달 답력을 <b>유압으로 변환해 각 바퀴 캘리퍼에 전달</b>합니다. 비압축성 액체라 힘 손실 없이 순간 전달됩니다.<br><br>흡습성이 있어 수분이 섞이면 <span class="warn">비등점 하락 → 급제동 시 기포 발생(베이퍼 록) → 제동력 소실</span>. HEV도 오일 교환 주기는 동일합니다.`,
+'브레이크패드':`디스크에 마찰재를 눌러 <b>운동에너지를 열에너지로 변환해 감속</b>시킵니다.<br><br>NX4 HEV는 <b>회생제동(전기 모터가 발전기 역할) 우선</b>으로 패드 마모가 일반차의 약 절반입니다. 마모 한계 도달 시 <span class="warn">끼익 소음·제동 거리 증가·디스크 손상</span>이 나타납니다.`,
+'브레이크디스크':`패드가 눌리는 <b>금속 원판(로터)</b>으로, 마찰로 제동력이 발생합니다. 통풍 슬롯이 제동 열을 방출합니다.<br><br>과마모 시 <span class="warn">두께 감소 → 제동 시 진동·편제동</span>, 심하면 균열로 파손 위험이 있습니다. 패드 교환 2회마다 두께를 측정하세요.`,
+'타이어':`<b>차량 무게를 지지하고 노면과의 마찰로 가속·제동·조향력을 전달</b>하는 유일한 접지 부품입니다.<br><br>트레드(홈) 감소 시 <span class="warn">빗길 수막현상(하이드로플레이닝) 위험 증가</span>. 법적 기준 1.6mm이나 <b>3mm 이하 교환 검토, 2mm에서 즉시 교환</b>을 권장합니다.`,
+'타이어 로테이션':`앞 타이어가 조향·구동으로 뒤보다 빨리 마모됩니다. <b>전후 위치를 교환해 4개 타이어가 균일하게 마모</b>되도록 합니다.<br><br>미시행 시 <span class="warn">앞 타이어 조기 마모 → 불균형 → 주행 안정성 저하</span>. 얼라이먼트 동시 점검 시 타이어 수명이 약 30% 연장됩니다.`,
+'냉각수':`연소 고열(최대 2,000°C)을 <b>라디에이터로 순환시켜 냉각</b>합니다. 없으면 수 분 내 과열 파손됩니다. 동결 방지·부식 억제 역할도 합니다.<br><br>시간이 지나면 <span class="warn">방청·부동액 성능 저하</span>. OAT 장수명 타입은 5년/10만km 주기입니다.`,
+'인버터 냉각수':`인버터·모터·배터리의 <b>고전압 전류 열을 별도 회로로 냉각</b>합니다. 전기 전도성이 낮은 특수 LLC를 사용해야 합니다.<br><br>일반 냉각수는 전도성이 있어 <span class="danger">혼용 시 고전압 누전 → 감전·화재 위험</span>. 반드시 HEV 전용 LLC만 사용하세요.`,
+'12V 보조배터리':`HV 배터리와 별개로 <b>시동·전조등·오디오·ECU 등 모든 12V 전장계에 전원을 공급</b>합니다.<br><br>HEV는 잦은 충방전으로 <span class="warn">일반차보다 빠른 열화</span>. 방전 시 시동 불가·전장 먹통이 됩니다. 4년 또는 시동 지연 시 즉시 교환하세요.`,
+'고전압배터리 점검':`엔진과 전기 모터에 전력을 공급하는 <b>HEV 시스템의 핵심 에너지 저장 장치</b>(리튬이온)입니다.<br><br><b>SOC 20~80% 구간 유지</b>가 수명 최대화의 핵심입니다. 완전 방전·과충전 반복 시 셀이 빠르게 열화됩니다. 현대 HEV 보증은 <b>10년/20만km</b>입니다.`
+};
+
+const TIPS_MAP={
+'엔진오일':'오일 게이지 F선 넘으면 희석 의심 → 즉시 교환. ECU 업그레이드 필수!',
+'오일필터':'엔진오일과 항상 세트 교환. 따로 교환하면 비효율적.',
+'스파크플러그':'⚠ 출고 후 미교환! 현재 89,660km — 이미 60K 초과. 조기 점검 또는 즉시 교환 권장!',
+'타이밍체인':'냉간 시동 "덜덜/딸깍" 소음 시 즉시 입고. 오일 관리가 전부.',
+'겉벨트(HSG)':'육안으로 균열·마모 확인. 끊어지면 HSG 정지로 발전 불가.',
+'에어클리너':'황사 심한 봄은 30K로 앞당김. 막히면 연비 저하·검은 연기.',
+'에어컨필터':'봄·가을 교환 시기 캘린더 알람 설정 추천. 에어컨 켤 때 악취도 신호.',
+'변속기오일':'제조사 무교환 주장 있지만 60K 교환이 30만km의 비결.',
+'브레이크오일':'오일 색이 갈색으로 변하면 교환 시기. 흡습으로 비등점 하락.',
+'브레이크패드':'HEV 회생제동으로 마모 느림. 마모센서 알림 기다려도 OK.',
+'브레이크디스크':'출고 후 미교환. 현재 89,660km — 120,000km 교환 기준 약 30K 여유 있음. 패드 교환 시 두께 동시 점검.',
+'타이어':'공기압 월 1회 점검(냉간 기준). 로테이션과 세트로 관리.',
+'타이어 로테이션':'얼라이먼트 동시 점검 강력 권장. 수명 약 30% 연장 효과.',
+'냉각수':'보조탱크 레벨 월 1회 확인. 증류수와 50:50 혼합 유지.',
+'인버터 냉각수':'절대 일반 냉각수 혼용 금지! 혼용 시 누전·화재 위험.',
+'12V 보조배터리':'배터리 전압 12.4V 이상이 정상. 시동 지연 시 즉시 교환.',
+'고전압배터리 점검':'SOC 20~80% 유지. 장기 주차 시 50% 충전 권장.'
+};
+
+const ITEMS=[
+  {name:'엔진오일',         sub:'Engine Oil · G1.6T HEV',    cat:'engine', pkm:7500,   pmo:null, lkm:OIL_KM, ldt:LAST_EX, nx4:true},
+  {name:'오일필터',         sub:'Oil Filter',                 cat:'engine', pkm:7500,   pmo:null, lkm:OIL_KM, ldt:LAST_EX},
+  {name:'스파크플러그',     sub:'Iridium Plug · G4FJ GDi',   cat:'engine', pkm:60000,  pmo:null, lkm:0,      ldt:null},
+  {name:'타이밍체인',       sub:'Timing Chain · 교체 불필요', cat:'chain',  pkm:0,      pmo:null, lkm:null,   ldt:null, isChain:true},
+  {name:'겉벨트(HSG)',      sub:'Serpentine Belt · HEV 전용', cat:'engine', pkm:80000,  pmo:null, lkm:20000,  ldt:null},
+  {name:'에어클리너',       sub:'Air Filter',                 cat:'filter', pkm:40000,  pmo:null, lkm:OIL_KM, ldt:LAST_EX},
+  {name:'에어컨필터',       sub:'Cabin Air Filter',           cat:'filter', pkm:null,   pmo:6,   lkm:OIL_KM, ldt:LAST_EX},
+  {name:'변속기오일',       sub:'ATF 6AT',                    cat:'trans',  pkm:60000,  pmo:null, lkm:OIL_KM, ldt:LAST_EX},
+  {name:'브레이크오일',     sub:'Brake Fluid DOT4',           cat:'brake',  pkm:null,   pmo:30,  lkm:OIL_KM, ldt:LAST_EX},
+  {name:'브레이크패드',     sub:'Brake Pad · 회생제동 유리',  cat:'brake',  pkm:70000,  pmo:null, lkm:30000,  ldt:null},
+  {name:'브레이크디스크',   sub:'Brake Disc',                 cat:'brake',  pkm:120000, pmo:null, lkm:0,      ldt:null},
+  {name:'타이어',           sub:'Tyre',                       cat:'brake',  pkm:50000,  pmo:null, lkm:50000,  ldt:null},
+  {name:'타이어 로테이션',  sub:'Rotation · 편마모 방지',     cat:'brake',  pkm:10000,  pmo:null, lkm:85000,  ldt:null},
+  {name:'냉각수',           sub:'Engine Coolant · OAT',       cat:'cooling',pkm:null,   pmo:60,  lkm:null,   ldt:new Date(2022,0,1)},
+  {name:'인버터 냉각수',    sub:'Inverter Coolant · HEV전용', cat:'hybrid', pkm:null,   pmo:60,  lkm:null,   ldt:new Date(2022,0,1), nx4:true},
+  {name:'12V 보조배터리',   sub:'Aux Battery',                cat:'hybrid', pkm:null,   pmo:48,  lkm:null,   ldt:new Date(2022,0,1)},
+  {name:'고전압배터리 점검',sub:'HV Battery Check',           cat:'hybrid', pkm:15000,  pmo:null, lkm:80000,  ldt:null},
+];
+function calcNext(it){if(it.isChain)return{nkm:null,ndt:null};let nkm=null,ndt=null;if(it.pkm){nkm=(it.lkm||CUR_KM)+it.pkm;ndt=kmToDate(nkm);}else if(it.pmo){const base=it.ldt||TODAY;ndt=addMon(base,it.pmo);nkm=Math.round(CUR_KM+monDiff(TODAY,ndt)*MON_KM);}return{nkm,ndt};}
+function stOf(ndt){if(!ndt)return'ok';const d=dayDiff(TODAY,ndt);return d<90?'urgent':d<180?'soon':'ok';}
+const SECS=[
+  {lbl:'── 엔진 · 점화 · 구동계',  ns:['엔진오일','오일필터','스파크플러그','타이밍체인','겉벨트(HSG)']},
+  {lbl:'── 필터 & 공기',            ns:['에어클리너','에어컨필터']},
+  {lbl:'── 변속기',                 ns:['변속기오일']},
+  {lbl:'── 제동 & 타이어',          ns:['브레이크오일','브레이크패드','브레이크디스크','타이어','타이어 로테이션']},
+  {lbl:'── 냉각 & 하이브리드',      ns:['냉각수','인버터 냉각수','12V 보조배터리','고전압배터리 점검']},
+];
+const IMAP=Object.fromEntries(ITEMS.map(i=>[i.name,i]));
+
+function openPanel(name){
+  const it=IMAP[name];if(!it)return;
+  const col=C[it.cat];
+  const{nkm,ndt}=calcNext(it);
+  const st=stOf(ndt);
+  const stCol=st==='urgent'?'#f87171':st==='soon'?'#fbbf24':'#22c55e';
+  const dl=ndt?dayDiff(TODAY,ndt):null;
+  document.getElementById('pTag').textContent=it.sub;
+  document.getElementById('pTag').style.color=col;
+  document.getElementById('pTitle').textContent=name;
+  document.getElementById('pTitle').style.color=col;
+  const subTxt=it.isChain?'금속 체인 방식 — 정기 교체 불필요':ndt?`다음 교환: ${fmtD(ndt)} ${dl!=null?(dl<0?'⚠ '+Math.abs(dl)+'일 초과':'D-'+dl):''}` : '';
+  document.getElementById('pSub').textContent=subTxt;
+  document.getElementById('pSub').style.color=it.isChain?'#38bdf8':stCol;
+  document.getElementById('pIllust').innerHTML=SVG_MAP[name]||`<svg viewBox="0 0 420 180" xmlns="http://www.w3.org/2000/svg"><rect width="420" height="180" fill="#111827"/><text x="210" y="95" text-anchor="middle" fill="#6b7a99" font-size="14">${name}</text></svg>`;
+  document.getElementById('pRole').innerHTML=ROLES_MAP[name]||'설명 준비 중입니다.';
+  let sh='';
+  if(it.isChain){sh=`<div class="pstat"><div class="pstat-label">교환 방식</div><div class="pstat-val" style="color:#38bdf8;font-size:12px">금속 체인 (무교환)</div></div><div class="pstat"><div class="pstat-label">관리 핵심</div><div class="pstat-val" style="color:#00e5a0;font-size:12px">엔진오일 관리</div></div>`;}
+  else{const per=it.pkm?it.pkm.toLocaleString()+'km':it.pmo+'개월';sh=`<div class="pstat"><div class="pstat-label">교환 주기</div><div class="pstat-val" style="color:${col}">${per}</div></div><div class="pstat"><div class="pstat-label">다음 교환</div><div class="pstat-val" style="color:${stCol};font-size:13px">${ndt?fmtD(ndt):'—'}</div></div><div class="pstat"><div class="pstat-label">예상 km</div><div class="pstat-val" style="color:${col}">${nkm?Number(nkm).toLocaleString()+'km':'—'}</div></div><div class="pstat"><div class="pstat-label">남은 날짜</div><div class="pstat-val" style="color:${stCol}">${dl!=null?(dl<0?'⚠ '+Math.abs(dl)+'일 초과':'D-'+dl):'—'}</div></div>`;}
+  document.getElementById('pStats').innerHTML=sh;
+  document.getElementById('pNote').innerHTML=`<b>💡 정비 팁:</b> ${it.nx4?'<b style="color:#fbbf24">[NX4 주의]</b> ':''}${TIPS_MAP[name]||'정기 점검을 통해 이상 유무를 확인하세요.'}`;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('sidePanel').classList.add('open');
+}
+function closePanel(){document.getElementById('overlay').classList.remove('open');document.getElementById('sidePanel').classList.remove('open');}
+
+function buildXHead(){let h='<div class="gx-head">';for(let m=0;m<=TOTAL;m+=3){const d=addMon(CS,m);const isYr=d.getMonth()===0;h+=`<div class="gx-tick ${isYr?'yr-mark':''}">${isYr?d.getFullYear()+'<br>':''}${p2(d.getMonth()+1)}월</div>`;}return h+'</div>';}
+
+function buildGantt(){
+  const ci=document.getElementById('gInner');let h=buildXHead();
+  h+=`<div class="gx-grid-wrap"><div class="gx-grid">`;
+  for(let m=0;m<=TOTAL;m+=3){const d=addMon(CS,m);h+=`<div class="gx-cell ${d.getMonth()===0?'yr':''}"></div>`;}
+  h+=`</div><div class="today-line" id="tline"><div class="today-lbl">TODAY</div></div>`;
+  SECS.forEach(sec=>{
+    h+=`<div class="gsec-lbl">${sec.lbl}</div>`;
+    sec.ns.forEach(nm=>{
+      const it=IMAP[nm];if(!it)return;
+      const col=C[it.cat];const{nkm,ndt}=calcNext(it);const st=stOf(ndt);
+      const stCol=st==='urgent'?'var(--rose)':st==='soon'?'var(--amber)':'var(--green)';
+      const dl=ndt?dayDiff(TODAY,ndt):null;
+      const dlStr=it.isChain?'👆 클릭해서 상세 보기':dl!=null?(dl<0?`⚠ ${Math.abs(dl)}일 초과`:`D-${dl}`):'👆 클릭해서 상세 보기';
+      const dlCol=it.isChain?'var(--cyan)':stCol;
+      let bars='';
+      if(it.isChain){bars=`<div class="g-chain-bar"><span class="g-chain-lbl">⛓ CHAIN · 교체 불필요 · 오일 관리가 곧 체인 수명</span></div>`;}
+      else{
+        if(it.ldt){const lp=pD(it.ldt),np=pD(TODAY);if(np>lp)bars+=`<div class="g-bar done" style="left:${lp}%;width:${np-lp}%;background:${col}"><span class="g-bar-lbl">완료</span></div>`;}
+        if(ndt){const np=pD(TODAY),ep=Math.min(pD(ndt),100);if(ep>np)bars+=`<div class="g-bar next" style="left:${np}%;width:${ep-np}%;background:${col};opacity:.7"><span class="g-bar-lbl">${ep-np>6?(nkm?Math.round(nkm/1000)+'K':''):''}km</span></div>`;}
+        if(it.pkm&&nkm){const n2km=nkm+it.pkm,n2dt=kmToDate(n2km),sp=Math.min(pD(ndt),100),ep=Math.min(pD(n2dt),100);if(ep>sp&&sp<100)bars+=`<div class="g-bar future" style="left:${sp}%;width:${ep-sp}%;background:${col}"><span class="g-bar-lbl">${ep-sp>6?Math.round(n2km/1000)+'K':''}</span></div>`;}
+        else if(it.pmo&&ndt){const n2dt=addMon(ndt,it.pmo),sp=Math.min(pD(ndt),100),ep=Math.min(pD(n2dt),100);const n2km=nkm?nkm+Math.round(monDiff(ndt,n2dt)*MON_KM):null;if(ep>sp&&sp<100)bars+=`<div class="g-bar future" style="left:${sp}%;width:${ep-sp}%;background:${col}"><span class="g-bar-lbl">${ep-sp>6&&n2km?Math.round(n2km/1000)+'K':''}</span></div>`;}
+        if(ndt){const pp=pD(ndt);if(pp>=0&&pp<=100)bars+=`<div class="g-pin" style="left:${pp}%"><div class="g-pin-line"></div><div class="g-pin-lbl" style="color:${stCol}">${fmtM(ndt)}</div></div>`;}
+      }
+      const nx4t=it.nx4?`<span class="tag-nx4">NX4</span>`:'';
+      const chnT=it.isChain?`<span class="tag-chain">CHAIN</span>`:'';
+      h+=`<div class="g-row" onclick="openPanel('${nm}')">
+        <div class="g-lbl"><div class="g-name" style="color:${col}">${it.name}${nx4t}${chnT}</div><div class="g-sub">${it.sub}</div><div class="g-dl" style="color:${dlCol}">${dlStr}</div></div>
+        <div class="g-bars">${bars}</div>
+      </div>`;
+    });
+    h+='<hr class="sec-div">';
+  });
+  h+='</div>';
+  ci.innerHTML=h;
+  const tl=document.getElementById('tline');
+  if(tl)tl.style.left=`calc(210px + ${pD(TODAY)}% * (100% - 210px) / 100)`;
+}
+
+function buildAlerts(){
+  const alerts=[];
+  ITEMS.forEach(it=>{if(it.isChain)return;const{nkm,ndt}=calcNext(it);if(!ndt)return;const d=dayDiff(TODAY,ndt),st=stOf(ndt);if(st!=='ok')alerts.push({it,ndt,nkm,d,st});});
+  alerts.sort((a,b)=>a.d-b.d);
+  if(!alerts.length){document.getElementById('alertBox').innerHTML='';return;}
+  let h='<div class="al-title">⚡ 교환 임박 / 주의 — 클릭하면 상세 설명 + 일러스트</div><div class="al-cards">';
+  alerts.forEach(({it,ndt,nkm,d,st})=>{
+    const col=C[it.cat];const lbl=d<0?'초과':d<90?'임박':'주의';
+    h+=`<div class="al-card ${st}" onclick="openPanel('${it.name}')"><div class="ac-badge">${lbl}</div><div class="ac-name" style="color:${col}">${it.name}${it.nx4?`<span class="tag-nx4" style="margin-left:5px">NX4</span>`:''}</div><div class="ac-date">${fmtD(ndt)}</div><div class="ac-km">${nkm?Number(nkm).toLocaleString()+'km':''} · ${d<0?Math.abs(d)+'일 초과':'D-'+d}</div></div>`;
+  });
+  document.getElementById('alertBox').innerHTML=h+'</div>';
+}
+
+function buildTable(){
+  const tb=document.getElementById('tBody');let h='';
+  SECS.forEach(sec=>{
+    h+=`<tr><td colspan="6" style="padding:10px 14px 4px;font-size:9px;letter-spacing:2px;color:var(--muted);font-family:'JetBrains Mono',monospace">${sec.lbl}</td></tr>`;
+    sec.ns.forEach(nm=>{
+      const it=IMAP[nm];if(!it)return;
+      const col=C[it.cat];const{nkm,ndt}=calcNext(it);const d=ndt?dayDiff(TODAY,ndt):null;const st=stOf(ndt);
+      let sc,sl;
+      if(it.isChain){sc='s-chain';sl='교체불필요';}
+      else{sc=st==='urgent'?'s-u':st==='soon'?'s-s':'s-o';sl=d==null?'—':d<0?'초과':d<90?`임박 D-${d}`:d<180?`주의 D-${d}`:`여유 D-${d}`;}
+      const per=it.isChain?'체인 (무교환)':it.pkm?`${it.pkm.toLocaleString()}km`:`${it.pmo}개월`;
+      const lastStr=it.isChain?'해당없음':it.ldt?fmtD(it.ldt):it.lkm?it.lkm.toLocaleString()+'km':'추정';
+      h+=`<tr onclick="openPanel('${nm}')"><td><span style="font-weight:500;color:${col}">${it.name}</span>${it.nx4?`<span class="tag-nx4" style="margin-left:4px">NX4</span>`:''}${it.isChain?`<span class="tag-chain" style="margin-left:4px">CHAIN</span>`:''}<br><span style="font-size:11px;color:var(--muted)">${it.sub}</span></td><td class="td-km">${per}</td><td class="td-dt">${lastStr}</td><td class="td-dt" style="color:${it.isChain?'var(--cyan)':st==='urgent'?'var(--rose)':st==='soon'?'var(--amber)':'var(--green)'}">${it.isChain?'영구사용(오일관리)':ndt?fmtD(ndt):'—'}</td><td class="td-km">${it.isChain?'—':nkm?Number(nkm).toLocaleString()+'km':'—'}</td><td class="td-st"><span class="${sc}">${sl}</span></td></tr>`;
+    });
+  });
+  tb.innerHTML=h;
+}
+function switchView(v){document.getElementById('vGantt').classList.toggle('hidden',v!=='gantt');document.getElementById('vTable').classList.toggle('hidden',v!=='table');document.querySelectorAll('.vtab').forEach((t,i)=>t.classList.toggle('active',(i===0&&v==='gantt')||(i===1&&v==='table')));}
+buildGantt();buildAlerts();buildTable();
+</script>
+</body>
+</html>
