@@ -11,8 +11,8 @@
 |------|------|------|
 | 00_sources (원본 요구사항) | ✅ 완료 | 투싼 NX4 HEV 프로토타입 기반 분석 |
 | 01_planning (명세 작성) | ✅ **완료** | 기능·화면·아키텍처·데이터·테스트 명세 |
-| 02_plan (실행 계획) | ⏳ **다음 작업** | 기능별 구현 체크리스트 작성 필요 |
-| 03_build (구현) | 🔲 미착수 | 프로젝트 골격 생성 전 |
+| 02_plan (실행 계획) | ✅ **완료** | 기능별 구현 체크리스트 작성 완료 (2026-06-14) |
+| 03_build (구현) | ⏳ **다음 작업** | Phase 0 프로젝트 골격 생성부터 착수 |
 | 04_verify (검증) | 🔲 미착수 | |
 
 ---
@@ -156,21 +156,24 @@ WHERE fuel_type_code = :vehicleFuel
 
 ---
 
-## 7. 다음 세션에서 할 작업: 02_plan 작성
+## 7. 다음 세션에서 할 작업: Phase 0 착수
 
-`sdd/02_plan/` 아래 기능별 실행 계획 파일 작성.
+`sdd/02_plan/` 기능별 실행 계획 파일 작성 완료 (2026-06-14).
 
 ```
 sdd/02_plan/
 ├── 03_architecture/
-│   └── tech_stack_decision.md  ✅ (Phase 0~4 체크리스트 기작성)
+│   └── tech_stack_decision.md      ✅ Phase 0~4 체크리스트
 ├── 01_feature/
-│   ├── vehicle_todos.md         ← 작성 필요 (AC-V1~V9 기반)
-│   ├── maintenance_todos.md     ← 작성 필요 (AC-M1~M16 기반)
-│   └── visualization_todos.md  ← 작성 필요 (AC-VZ1~VZ23 기반)
+│   ├── vehicle_todos.md             ✅ AC-V1~V10 실행 계획
+│   ├── maintenance_todos.md         ✅ AC-M1~M16 실행 계획
+│   └── visualization_todos.md       ✅ AC-VZ1~VZ23 실행 계획
 └── 10_test/
-    └── regression_verification.md  ← 작성 필요
+    └── regression_verification.md   ✅ 회귀 검증 범위 정의
 ```
+
+**다음 착수: Phase 0 — 프로젝트 골격 생성**  
+→ `sdd/02_plan/03_architecture/tech_stack_decision.md` Phase 0 체크리스트 참고
 
 ### Phase 0 — 프로젝트 골격 (최우선 착수)
 

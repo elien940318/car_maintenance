@@ -1,0 +1,157 @@
+# 정비 일정 관리 — 실행 계획
+
+> 참고: [sdd/01_planning/01_feature/maintenance_schedule_feature_spec.md](../../01_planning/01_feature/maintenance_schedule_feature_spec.md)  
+> 상태: 대기 (Phase 1 차량 스키마 완료 후 착수)  
+> 마지막 업데이트: 2026-06-14
+
+---
+
+## 범위 (Scope)
+
+| 레이어 | 대상 |
+|--------|------|
+| DB (Prisma) | MaintenancePartMaster, MaintenanceIntervalPreset, MaintenancePart, MaintenanceRecord 모델 정의 |
+| 시드 | 부품 마스터 23개 + 프리셋 ~90개 적재 |
+| 도메인 (Nest.js) | ScheduleCalculator (순수 함수), 상태 분류, AlertAggregator |
+| API (Nest.js) | MaintenanceModule (CRUD + 교환완료 + 일괄 기록) |
+| UI (Next.js) | 교환완료 인라인 입력, 일괄 교환 기록 UI, isVehicleSpecific 경고 태그 |
+
+---
+
+## 전제 조건 (Assumptions)
+
+- Phase 1: Vehicle 관련 스키마·시드 완료 (`vehicle_todos.md`)
+- ScheduleCalculator는 Nest.js `@Injectable()` 없이 순수 함수 모듈로 작성 (단위 테스트 최우선)
+- 교환완료 입력은 패널 내 인라인 처리 (별도 모달 없음, VZ22 연동)
+- 프리셋 원본은 수정 불가, 사용자 수정값은 MaintenancePart에만 반영 (AC-M16)
+
+---
+
+## 수락 기준 (AC 매핑)
+
+| AC | 내용 요약 |
+|----|---------|
+| M1 | 정비 항목 등록: 부품명·카테고리·주기유형(pkm/pmo)·주기값 저장 |
+| M2 | isChain=true 항목: 예정일 계산 스킵, "교환 불필요/모니터링" 표시 |
+| M3 | pkm과 pmo 동시 입력 불가 (XOR) |
+| M4 | 교환 기록 등록 시 즉시 재계산 트리거 |
+| M5 | pkm 계산: next_km=lkm+pkm, next_date=today+(next_km-cur_km)/monthly_km×30 |
+| M6 | pmo 계산: next_date=ldt+pmo개월, next_km=cur_km+months_diff×monthly_km |
+| M7 | 일괄 교환 기록: 선택 항목 전체 ldt·lkm 한 번에 업데이트 |
+| M8 | 상태 분류: urgent(<90일) / soon(90~179일) / ok(180일+) |
+| M9 | 예정일 초과(과거) → urgent, 초과 일수 표시 |
+| M10 | urgent·soon 항목 예정일 오름차순 알림 집계 |
+| M11 | isVehicleSpecific=true → 차량 전용 경고 태그 + 주의사항 표시 |
+| M12 | 교환완료 다이얼로그: 날짜(기본=오늘)·km(기본=현재km)·메모 입력 |
+| M13 | 교환완료 확인 → MaintenanceRecord 저장 + 상태 즉시 재계산 |
+| M14 | 교환완료 후 알림 카드 즉시 갱신 (urgent→ok 전환 시 카드 제거) |
+| M15 | 차량 등록 시 제원 조합 프리셋 조회 → MaintenancePart 후보 제안 |
+| M16 | 프리셋 주기 수정 시 원본 프리셋 불변, MaintenancePart에만 오버라이드 저장 |
+
+---
+
+## 실행 체크리스트
+
+### Phase 1 — Prisma 스키마 & 시드 (정비 관련 모델)
+
+- [ ] `schema.prisma`: MaintenancePartMaster 모델 정의
+  - part_key PK, name_ko, category, applicable_fuel_codes, role_description, tip_template, svg_key, sort_order
+- [ ] `schema.prisma`: MaintenanceIntervalPreset 모델 정의
+  - id UUID PK, part_key FK, fuel_type_code FK, transmission_code FK(nullable)
+  - interval_km, interval_months (XOR — Prisma 제약 주석으로 명시, 앱 레이어에서 검증)
+  - is_chain bool, note
+  - 유니크 제약: `(part_key, fuel_type_code, transmission_code)`
+- [ ] `schema.prisma`: MaintenancePart 모델 정의
+  - vehicle_id FK, part_key FK(nullable), name, sub_name, category
+  - interval_km, interval_months (XOR), is_chain, is_vehicle_specific, tip, svg_key, sort_order
+- [ ] `schema.prisma`: MaintenanceRecord 모델 정의
+  - part_id FK, record_km(nullable), record_date(nullable)
+  - 제약: record_km 또는 record_date 중 하나 이상 필수 (서비스 레이어 검증)
+- [ ] 마이그레이션 실행: `npx prisma migrate dev --name add-maintenance`
+- [ ] `seed.ts`: MaintenancePartMaster 23개 부품 적재 (`code_and_presets.md` 기준)
+- [ ] `seed.ts`: MaintenanceIntervalPreset ~90개 프리셋 적재 (연료×변속기 조합별)
+  - NX4 HEV (hev + at / e_motor) 프리셋 우선 포함
+
+### Phase 2 — Nest.js 도메인 & API
+
+#### ScheduleCalculator (순수 도메인 함수)
+
+- [ ] `src/schedule/schedule-calculator.ts` 작성
+  - [ ] `calcPkmNextKm(lkm, pkm)` → `next_km = lkm + pkm`
+  - [ ] `calcPkmNextDate(nextKm, curKm, monthlyKm)` → `next_date = today + (nextKm - curKm) / monthlyKm × 30`
+  - [ ] `calcPmoNextDate(ldt, pmo)` → `next_date = ldt + pmo개월` (date-fns addMonths)
+  - [ ] `calcPmoNextKm(curKm, monthlyKm, nextDate)` → `next_km = curKm + monthsDiff(today, nextDate) × monthlyKm`
+  - [ ] `classifyStatus(daysRemaining, isChain)` → `'urgent' | 'soon' | 'ok' | 'chain'`
+  - [ ] `computePartSchedule(part, lastRecord, vehicle)` → `{ nextKm, nextDate, daysRemaining, status }`
+- [ ] ScheduleCalculator 단위 테스트 작성 (Jest)
+  - test_strategy.md의 8개 핵심 케이스 커버 (`pkm 정상`, `pmo 정상`, `isChain`, `초과`, `경계값 45/91/181일`)
+
+#### AlertAggregator
+
+- [ ] `src/schedule/alert-aggregator.ts` 작성
+  - `aggregateAlerts(parts, vehicle)` → urgent/soon 항목 예정일 오름차순 배열 반환
+
+#### MaintenanceModule
+
+- [ ] `src/maintenance/maintenance.module.ts` 생성
+- [ ] `MaintenanceController`
+  - `GET  /vehicles/:vehicleId/parts` — 차량별 정비 항목 목록 (계산값 포함)
+  - `POST /vehicles/:vehicleId/parts` — 정비 항목 수동 등록
+  - `PATCH /vehicles/:vehicleId/parts/:partId` — 주기·팁 수정
+  - `POST /vehicles/:vehicleId/parts/:partId/records` — 교환완료 단건 (AC-M12, M13)
+  - `POST /vehicles/:vehicleId/parts/bulk-records` — 일괄 교환 기록 (AC-M7)
+- [ ] `MaintenanceService`
+  - `findByVehicle()`: 각 항목에 ScheduleCalculator 적용한 read model 반환
+  - `createRecord()`: MaintenanceRecord 저장 → 해당 Part 상태 재계산 반환
+  - `bulkCreateRecords()`: 선택 partId 배열 + record 일괄 처리 (AC-M7)
+  - `validateXOR()`: interval_km과 interval_months 동시 입력 시 BadRequestException (AC-M3)
+  - `validateRecord()`: record_km, record_date 둘 다 없으면 BadRequestException
+- [ ] DTO 작성
+  - `CreateMaintenancePartDto`: pkm/pmo XOR 검증 (class-validator `@ValidateIf`)
+  - `RecordCompletionDto`: record_km, record_date (둘 다 optional이나 하나 필수)
+  - `BulkRecordDto`: partIds 배열 + 공통 record 값
+
+### Phase 3 — Next.js UI
+
+- [ ] **isVehicleSpecific 경고 태그** (AC-M11)
+  - 카드/패널에 `[NX4]` 등 태그 + 주의사항 텍스트 표시
+- [ ] **교환완료 인라인 입력** (AC-M12, M13) — 패널 내 하단 고정
+  - 날짜 DatePicker (기본값: 오늘)
+  - 주행거리 NumberInput (기본값: 차량 current_km)
+  - 메모 TextInput (선택)
+  - 저장 버튼 → `POST /records` → 상태 즉시 갱신 (TanStack Query invalidate)
+- [ ] **일괄 교환 기록 UI** (AC-M7)
+  - 체크박스로 복수 항목 선택 → "선택 항목 교환완료" 버튼
+  - 공통 날짜·km 입력 → bulkCreateRecords 호출
+
+---
+
+## 현재 작업 메모 (Current Notes)
+
+- 아직 미착수.
+- ScheduleCalculator는 외부 의존성 없는 순수 함수 — 단위 테스트를 코드보다 먼저 작성(TDD).
+- `computePartSchedule()`의 `today` 기준일은 `new Date()`가 아니라 Vehicle.reference_date 기준 고려 필요 (기준일 논의 필요).
+- 일괄 교환 기록(AC-M7) UI는 간트/목록 뷰 체크박스 선택과 연동 예정 → VZ 구현 후 통합.
+
+---
+
+## 검증 (Validation)
+
+| AC | 레이어 | 검증 방법 |
+|----|--------|---------|
+| M1 | unit | CreateMaintenancePart 유효성 검사 테스트 |
+| M2 | unit | isChain=true → computePartSchedule() → status='chain', nextDate=null |
+| M3 | unit | interval_km+interval_months 동시 입력 → BadRequestException |
+| M4 | unit | createRecord() 호출 후 반환 status 변경 확인 |
+| M5 | unit | pkm: lkm=89485, pkm=7500, cur=89660, mon=750 → next_km=96985 |
+| M6 | unit | pmo: ldt=2026-06-07, pmo=6 → next_date=2026-12-07 |
+| M7 | unit + e2e | bulkCreateRecords() DB 레코드 수 확인 + Playwright UI 흐름 |
+| M8 | unit | 경계값 테스트: days=89→urgent, 90→soon, 179→soon, 180→ok |
+| M9 | unit | days=-1 → urgent, daysRemaining < 0 |
+| M10 | unit | aggregateAlerts() 결과 예정일 오름차순 정렬 확인 |
+| M11 | e2e | Playwright: isVehicleSpecific=true 항목 경고 태그 렌더링 확인 |
+| M12 | e2e | Playwright: 교환완료 입력 기본값 (날짜=오늘, km=현재km) |
+| M13 | unit + e2e | createRecord() 후 MaintenanceRecord 생성 + status 재계산 일치 |
+| M14 | e2e | Playwright: urgent→ok 전환 시 알림 카드 즉시 제거 확인 |
+| M15 | unit | PresetService.query(fuelCode='ev') → engine_oil 미포함 |
+| M16 | unit | Part interval_km 수정 후 Preset 원본 값 불변 확인 |
