@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "name": "carmaint",
+  "spec": {
+    "planning_paths": [
+      "sdd/01_planning",
+      "sdd/02_plan"
+    ],
+    "canonical_targets_dir": "sdd/02_plan/canonical-targets"
+  },
+  "commands": {
+    "build": "echo 'build command TBD — 기술 스택 결정 후 설정'",
+    "proof": "echo 'proof command TBD'",
+    "deploy_dev": "echo 'DEV 배포 TBD'",
+    "verify_dev": "echo 'verify command TBD'"
+  },
+  "artifacts": {
+    "proof_output": "tmp/proof-results.json"
+  },
+  "integrations": {
+    "sdd": {
+      "plan_dir": "sdd/02_plan",
+      "verify_dir": "sdd/03_verify"
+    }
+  },
+  "notes": [
+    "자동차 부품별 정비 일정관리 서비스 토이프로젝트.",
+    "참고 프로토타입: D:\\prj\\hybrid_schedule_v2.html (투싼 NX4 HEV)",
+    "기술 스택 미결정 — sdd/01_planning 완료 후 결정."
+  ]
+}

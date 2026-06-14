@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# build output
+dist/
+build/
+*.egg-info/
+
+# env
+.env
+.env.local
+
+# tmp / runtime
+tmp/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
