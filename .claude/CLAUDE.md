@@ -33,7 +33,7 @@ carmaint/
 │   ├── 01_planning/      # 기능/화면/아키텍처/데이터/테스트 명세 ✅ 완료
 │   ├── 02_plan/          # 실행 계획 파일
 │   ├── 03_build/         # 구현 현황 요약 (current-state)
-│   ├── 03_verify/        # 검증 현황 요약
+│   ├── 04_verify/        # 검증 현황 요약
 │   ├── 05_operate/       # 운영 기록
 │   └── 99_toolchain/     # 자동화 스크립트, 시드 데이터
 │       └── seed_data/    # 코드 마스터 + 정비 주기 프리셋
@@ -46,7 +46,7 @@ carmaint/
 
 - **현재 단계**: 01_planning 완료 → **02_plan 작성 중**
 - **기술 스택**: 확정 (Next.js + Nest.js + Prisma + SQLite + shadcn/ui + Zustand + TanStack Query)
-- **AC 총계**: 48개 (V9 + M16 + VZ23)
+- **AC 총계**: 49개 (V10 + M16 + VZ23)
 - **전체 현황**: `sdd/PROJECT_STATUS.md`
 - **참고 프로토타입**: `D:\prj\hybrid_schedule_v2.html` (투싼 NX4 HEV)
 

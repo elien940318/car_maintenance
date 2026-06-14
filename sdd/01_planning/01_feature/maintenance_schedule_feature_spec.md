@@ -17,6 +17,7 @@
 | `pmo` | 개월 기반 교환 주기. 다음 교환일 = 최근 교환일 + pmo 개월 |
 | `lkm` | 최근 교환 주행거리 |
 | `ldt` | 최근 교환 날짜 |
+| `last_record` | `record_date DESC`, `created_at DESC` 기준 최신 1건의 `MaintenanceRecord`. 동일 날짜 다건 시 `created_at` 최신이 기준. |
 | `isChain` | 교환 불필요 항목 (상태 모니터링만, 예: 타이밍체인) |
 | `isVehicleSpecific` | 특정 차량 모델 전용 주의사항 보유 항목 (예: NX4 HEV) |
 

@@ -37,7 +37,8 @@ carmaint/
     │   └── INDEX.md
     ├── 02_plan/                 # 실행 계획 (작성 중)
     ├── 03_build/                # 구현 현황
-    ├── 03_verify/               # 검증 현황
+    ├── 04_verify/               # 검증 현황
+    ├── 05_operate/              # 운영 기록
     └── 99_toolchain/
         └── seed_data/           # 코드 마스터 + 정비 주기 프리셋 데이터
 ```
@@ -57,9 +58,10 @@ carmaint/
 
 ## 개발 현황
 
-- **01_planning**: ✅ 완료 — AC 48개 확정
-- **02_plan**: ⏳ 작성 중
+- **01_planning**: ✅ 완료 — AC 49개 확정 (V10 + M16 + VZ23)
+- **02_plan**: ⏳ 다음 작업
 - **03_build**: 🔲 미착수
+- **04_verify**: 🔲 미착수
 
 > 전체 현황: [`sdd/PROJECT_STATUS.md`](sdd/PROJECT_STATUS.md)
 

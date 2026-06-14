@@ -99,7 +99,7 @@ VehicleTypeCode ──< Vehicle >── FuelTypeCode
 | brake_fluid | 브레이크오일 | brake | gasoline,diesel,lpg,hev,phev,ev |
 | brake_pad_front | 브레이크패드(전) | brake | gasoline,diesel,lpg,hev,phev,ev |
 | brake_pad_rear | 브레이크패드(후) | brake | gasoline,diesel,lpg,hev,phev,ev |
-| brake_disc_front | 브레이크디스크(전) | brake | gasoline,diesel,lpg,hev,phev,ev |
+| brake_disc | 브레이크디스크 | brake | gasoline,diesel,lpg,hev,phev,ev |
 | tire | 타이어 | brake | gasoline,diesel,lpg,hev,phev,ev |
 | tire_rotation | 타이어 로테이션 | brake | gasoline,diesel,lpg,hev,phev,ev |
 | coolant | 냉각수 | cooling | gasoline,diesel,lpg,hev,phev |
@@ -153,7 +153,7 @@ WHERE fuel_type_code = :vehicleFuel
 | transmission_code | string FK | ✓ | → TransmissionTypeCode |
 | current_km | int | ✓ | 현재 주행거리 (km) |
 | annual_km | int | ✓ | 연간 주행거리 (km/년) |
-| monthly_km | int | ✓ | 월 평균 = annual_km / 12 (저장값, 수동 조정 가능) |
+| monthly_km | int | ✓ | 월 평균 주행거리 (내부 계산값). `annual_km / 12` (소수점 이하 반올림). 사용자에게 직접 입력 받지 않으며 `annual_km` 변경 시 자동 재계산. |
 | reference_date | date | ✓ | current_km 측정 기준일 |
 | notes | string | - | 메모 |
 | created_at | datetime | ✓ | |
@@ -204,6 +204,7 @@ DB에 저장하지 않고 런타임에 계산:
 
 | 필드 | 계산 방식 |
 |------|---------|
+| last_record | 해당 `MaintenancePart`의 `MaintenanceRecord` 중 `record_date DESC`, `created_at DESC` 기준 최신 1건 |
 | next_km | last_record.record_km + part.interval_km |
 | next_date | last_record.record_date + part.interval_months (pmo) 또는 km 환산 |
 | days_remaining | next_date − today |

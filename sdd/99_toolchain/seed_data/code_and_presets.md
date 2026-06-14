@@ -68,7 +68,7 @@
 | brake_fluid | 브레이크오일 | brake | gasoline,diesel,lpg,hev,phev,ev | 140 |
 | brake_pad_front | 브레이크패드(전) | brake | gasoline,diesel,lpg,hev,phev,ev | 150 |
 | brake_pad_rear | 브레이크패드(후) | brake | gasoline,diesel,lpg,hev,phev,ev | 160 |
-| brake_disc_front | 브레이크디스크(전) | brake | gasoline,diesel,lpg,hev,phev,ev | 170 |
+| brake_disc | 브레이크디스크 | brake | gasoline,diesel,lpg,hev,phev,ev | 170 |
 | tire | 타이어 | brake | gasoline,diesel,lpg,hev,phev,ev | 180 |
 | tire_rotation | 타이어 로테이션 | brake | gasoline,diesel,lpg,hev,phev,ev | 190 |
 | coolant | 냉각수 | cooling | gasoline,diesel,lpg,hev,phev | 200 |
@@ -221,7 +221,7 @@
 
 | fuel | trans | interval_km | interval_months | note |
 |------|-------|------------|----------------|------|
-| gasoline | NULL | 50000 | NULL | 앞 패드가 뒤보다 마모 빠름 |
+| gasoline | NULL | 50000 | NULL | 전륜이 후륜보다 제동 부하 더 큼. 두께 3mm 이하 즉시 교환 |
 | diesel | NULL | 50000 | NULL | |
 | lpg | NULL | 50000 | NULL | |
 | hev | NULL | 80000 | NULL | 회생제동으로 약 1.5~2배 수명 |
@@ -239,11 +239,13 @@
 | phev | NULL | 100000 | NULL | |
 | ev | NULL | 120000 | NULL | |
 
-### 5-17. 브레이크디스크(전) (brake_disc_front)
+### 5-17. 브레이크디스크 (brake_disc)
+
+> 전·후 통합 관리. 전륜 기준 주기 적용.
 
 | fuel | trans | interval_km | interval_months | note |
 |------|-------|------------|----------------|------|
-| gasoline | NULL | 120000 | NULL | 두께 기준 점검 병행 |
+| gasoline | NULL | 120000 | NULL | 두께 기준 점검 병행. 마모 한계 도달 시 즉시 교환 |
 | diesel | NULL | 120000 | NULL | |
 | lpg | NULL | 120000 | NULL | |
 | hev | NULL | 150000 | NULL | 회생제동으로 마모 적음 |
@@ -319,4 +321,4 @@
 | 연료 코드 | 6 |
 | 변속기 코드 | 6 |
 | 부품 마스터 | 23 |
-| 프리셋 레코드 (예상) | 약 90개 |
+| 프리셋 레코드 (예상) | 약 88개 |
