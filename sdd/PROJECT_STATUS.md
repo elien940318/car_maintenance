@@ -46,7 +46,7 @@
 | OD-2 | 차량 1대 고정, 다중 차량 불가. 사용자·차량 1:1 ✅ |
 | OD-3 | MVP 인증 없음 ✅ |
 | OD-4 | SVG: `public/part-{category}-{slug}.svg` 정적 파일 ✅ |
-| OD-5 | 프리셋: Prisma seed.ts에 전체 연료×변속기 조합 ~90개 포함(NX4 HEV 17개 포함) ✅ |
+| OD-5 | 프리셋: Prisma seed.ts에 전체 연료×변속기 조합 약 106개 포함(NX4 HEV 17개 포함) ✅ |
 
 ---
 
@@ -79,7 +79,7 @@
 | `TransmissionTypeCode` | 변속기 코드 (AT·MT·DCT습식·DCT건식·CVT·e-motor 6개) |
 | `ManufacturerCode` | 제조사 코드 (국산 6 + 기타) |
 | `MaintenancePartMaster` | 부품 마스터 (23개 부품 정의, 브레이크패드 전/후 분리·디스크 통합) |
-| `MaintenanceIntervalPreset` | 제원 조합별 교환 주기 (약 90개 레코드) |
+| `MaintenanceIntervalPreset` | 제원 조합별 교환 주기 (약 106개 레코드) |
 | `Vehicle` | 차량 (제원 코드 FK 포함, annual_km → monthly_km 파생) |
 | `MaintenancePart` | 차량별 부품 인스턴스 (프리셋 복사 또는 수동) |
 | `MaintenanceRecord` | 교환 이력 |

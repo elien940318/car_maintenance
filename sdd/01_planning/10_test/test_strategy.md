@@ -1,16 +1,16 @@
 # 테스트 전략
 
 > 01_planning/10_test: 테스트 레이어 정의 및 AC 매핑.
-> 테스트 도구는 기술 스택(OD-1) 결정 후 확정.
+> 테스트 도구: OD-1 확정 반영 — Jest(Nest.js) · Vitest(Next.js) · Playwright(E2E).
 
 ---
 
 ## 테스트 레이어
 
-| 레이어 | 대상 | 도구 (TBD) |
+| 레이어 | 대상 | 도구 |
 |--------|------|-----------|
-| Unit | 도메인 로직 (ScheduleCalculator, 상태 분류) | pytest / jest |
-| Integration | Repository 어댑터 + DB | pytest / jest |
+| Unit | 도메인 로직 (ScheduleCalculator, 상태 분류) | Jest(api) / Vitest(web) |
+| Integration | Repository 어댑터 + DB | Jest + Supertest |
 | E2E | 브라우저 UI 흐름 | Playwright |
 | UI Parity | 화면 스냅샷 비교 | Playwright 스냅샷 |
 
@@ -42,10 +42,16 @@
 
 | AC | 테스트 레이어 | 설명 |
 |----|-------------|------|
-| AC-V1 | unit | 차량 생성 유효성 |
+| AC-V1 | unit | 차량 생성 유효성 (신규 필드 model_name·license_plate·manufacturer_code 포함) |
 | AC-V2 | unit | 주행거리 변경 → 재계산 |
 | AC-V3 | unit | 월 평균 변경 → 재계산 |
 | AC-V4 | e2e | 헤더 표시 |
+| AC-V5 | unit | 차량 1대 제한 (재등록 시 수정 화면 이동) |
+| AC-V6 | e2e | 제원 선택 폼 코드 목록 표시 |
+| AC-V7 | unit | 제원 조합별 프리셋 조회 (applicable_fuel_codes 기준 제외) |
+| AC-V8 | e2e | 프리셋 항목 수락·수정·제외 동작 |
+| AC-V9 | unit | annual_km → monthly_km 계산 정확성 |
+| AC-V10 | e2e | 차량 미등록 시 빈 상태 화면 → SCR-03 이동 |
 | AC-M1 | unit | 항목 등록 유효성 |
 | AC-M2 | unit | isChain 계산 스킵 |
 | AC-M3 | unit | pkm/pmo XOR 검증 |
@@ -83,6 +89,8 @@
 | AC-M12 | e2e | 교환완료 다이얼로그 기본값 (오늘 날짜·현재 km) |
 | AC-M13 | unit + e2e | 교환완료 저장 → MaintenanceRecord 생성 + 상태 재계산 |
 | AC-M14 | e2e | 교환완료 후 알림 카드 즉시 갱신 (ok 전환 시 카드 제거) |
+| AC-M15 | unit | 프리셋 조회 쿼리 정확성 (EV→engine_oil 제외, diesel→glow_plug 포함) |
+| AC-M16 | unit | 프리셋 주기 수정 시 원본 프리셋 불변 (개인화 오버라이드) |
 
 ---
 

@@ -50,7 +50,7 @@ npx prisma init --datasource-provider sqlite
 - [ ] MaintenancePart 모델 (interval_km XOR interval_months 제약)
 - [ ] MaintenanceRecord 모델
 - [ ] 초기 마이그레이션 실행: `npx prisma migrate dev --name init`
-- [ ] seed.ts 작성: 코드 마스터 전체 + 프리셋 ~90개(전체 연료×변속기 조합, NX4 HEV 포함) (#10)
+- [ ] seed.ts 작성: 코드 마스터 전체 + 프리셋 약 106개(전체 연료×변속기 조합, NX4 HEV 포함) (#10)
 
 ---
 

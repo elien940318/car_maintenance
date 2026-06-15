@@ -23,7 +23,7 @@
 | SCR-03 Step2 제원선택 | 375×812 | 420, 1720 |
 | SCR-03 Step3 주행정보 | 375×812 | 840, 1720 |
 | SCR-03 Step4 프리셋확인 | 375×812 | 1260, 1720 |
-| SCR-01 빈 상태 | 375×812 | 420, 1720 (SCR-03 우측) |
+| SCR-01 빈 상태 | 375×812 | 1680, 1720 (SCR-03 Step4 우측, 겹침 방지) |
 
 ### 실행 방법
 
@@ -47,6 +47,6 @@ Figma Desktop → Plugins → Development → Import plugin from manifest...
 
 | 파일 | 목적 |
 |------|------|
-| `01_automation/seed_parts.py` | 투싼 NX4 HEV 기본 정비 항목 17개 시드 데이터 |
-| `01_automation/run_ui_parity.py` | UI parity 검증 자동화 (AC-VZ14) |
+| `apps/api/prisma/seed.ts` | 코드 마스터 + 프리셋 약 106개 시드 (TS/Prisma 확정 스택, 구 `seed_parts.py` 대체) |
+| `01_automation/run_ui_parity` | UI parity 검증 자동화 (AC-VZ14, Playwright 스냅샷) |
 | `02_policies/` | 컨벤션 및 실행 정책 문서 |
