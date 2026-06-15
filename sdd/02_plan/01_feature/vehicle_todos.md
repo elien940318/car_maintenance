@@ -90,13 +90,16 @@
 - [ ] **헤더 차량 정보 표시** (AC-V4)
   - `components/Header.tsx`: 차량명·current_km·monthly_km·reference_date 표시
 - [ ] **SCR-03 — 4단계 차량 등록·수정 폼** (`app/vehicle/new/page.tsx`, `app/vehicle/edit/page.tsx`)
-  - Step 1 — 기본 정보: 차량명, 연식 입력
+  - Step 1 — 기본 정보: 차량 별칭(자유 입력), 차량 모델명, 차량번호, 제조사(드롭다운), 연식(드롭다운)
   - Step 2 — 제원 선택: 차종(VehicleTypeCode)·연료(FuelTypeCode)·변속기(TransmissionTypeCode) 드롭다운 (AC-V6)
-  - Step 3 — 주행거리: current_km, annual_km, reference_date 입력; monthly_km 자동 표시 (AC-V9)
-  - Step 4 — 프리셋 확인: 제원 기반 MaintenanceIntervalPreset 제안 목록 (AC-V7, V8)
-    - 각 항목 수락·주기수정·제외 UI
-    - "등록 완료" → 확정 항목만 MaintenancePart 생성
+    - 제원 확정 시 HEV·AT 조합 기준 프리셋 17항목 자동 제안 안내 표시
+  - Step 3 — 주행 정보: current_km, annual_km 입력; monthly_km(÷12) 자동 표시(AC-V9); 최초 등록일(date picker)
+  - Step 4 — 프리셋 확인: 제원 요약 칩 + MaintenanceIntervalPreset 제안 목록 (AC-V7, V8)
+    - ✓/✕ 상태 표시, 비해당 항목(타이밍벨트 HEV 등)은 비활성 처리
+    - "완료 등록" → 확정 항목만 MaintenancePart 생성
   - 기존 차량 있을 때 `/vehicle/new` 진입 시 `/vehicle/edit`로 리다이렉트 (AC-V5)
+  - 스텝 인디케이터: 완료 스텝 ✓ + mint 테두리, 현재 스텝 mint 배경
+  - React Hook Form `useFormContext` + 스텝별 컴포넌트 분리 구조
 
 ---
 

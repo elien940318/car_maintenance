@@ -967,7 +967,8 @@
   function buildEmptyState(parentPage) {
     const frame = createFrame('SCR-01 빈 상태 (375×812)', 375, 812);
     parentPage.appendChild(frame);
-    frame.x = 420;
+    // SCR-03 Step2(x=420)와 겹치지 않도록 Step4(x=1260+375=1635) 우측에 배치
+    frame.x = 1680;
     frame.y = 1720;
 
     // 헤더 (최소)
