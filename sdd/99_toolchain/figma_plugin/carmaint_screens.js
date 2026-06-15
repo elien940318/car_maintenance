@@ -36,12 +36,13 @@
 
   function setFont(node, size, weight = 400, color = COLORS.text) {
     node.fontSize = size;
-    node.fontName = { family: 'Inter', style: weight >= 700 ? 'Bold' : weight >= 600 ? 'SemiBold' : weight >= 500 ? 'Medium' : 'Regular' };
+    // Figma 내장 Inter의 세미볼드 정식 스타일명은 'Semi Bold'(띄어쓰기). 'SemiBold'로 쓰면 loadFontAsync가 reject되어 무한 로딩.
+    node.fontName = { family: 'Inter', style: weight >= 700 ? 'Bold' : weight >= 600 ? 'Semi Bold' : weight >= 500 ? 'Medium' : 'Regular' };
     node.fills = solidFill(color);
   }
 
   async function loadFonts() {
-    const fonts = ['Regular', 'Medium', 'SemiBold', 'Bold'];
+    const fonts = ['Regular', 'Medium', 'Semi Bold', 'Bold'];
     for (const style of fonts) {
       await figma.loadFontAsync({ family: 'Inter', style });
     }
@@ -133,28 +134,29 @@
   function buildTicketCard(parent, x, y, w, data) {
     const { partName, tag, status, dDay, cycle, nextDate, nextKm, lastDate } = data;
 
+    // 상태별 포인트 컬러 — 배경 틴트 대신 테두리(stroke)와 부품명 텍스트에 사용
     const statusColors = {
-      urgent: { bar: COLORS.rose,   bg: { r: 0.973, g: 0.443, b: 0.443, a: 0.08 } },
-      soon:   { bar: COLORS.amber,  bg: { r: 0.984, g: 0.749, b: 0.141, a: 0.08 } },
-      ok:     { bar: COLORS.green,  bg: { r: 0.133, g: 0.773, b: 0.369, a: 0.05 } },
-      chain:  { bar: COLORS.cyan,   bg: { r: 0.220, g: 0.741, b: 0.984, a: 0.05 } },
+      urgent: COLORS.rose,
+      soon:   COLORS.amber,
+      ok:     COLORS.green,
+      chain:  COLORS.cyan,
     };
-    const sc = statusColors[status];
+    const accent = statusColors[status];
 
     const cardH = lastDate ? 84 : 64;
     const card = figma.createFrame();
     card.name = `Card:${partName}`;
     card.resize(w, cardH);
-    card.fills = [{ type: 'SOLID', color: { r: sc.bg.r, g: sc.bg.g, b: sc.bg.b }, opacity: 1 }];
+    card.fills = solidFill(COLORS.bg2);   // 배경은 중립색으로 통일
+    card.cornerRadius = 10;
+    card.strokes = solidFill(accent);     // 포인트 ①: 상태 색 테두리
+    card.strokeWeight = 1.5;
+    card.strokeAlign = 'INSIDE';
     card.clipsContent = false;
     place(card, parent, x, y);
 
-    // 좌측 4px 컬러 바
-    const bar = createRect('StatusBar', 4, cardH, sc.bar);
-    place(bar, card, 0, 0);
-
-    // 1행: 부품명 + D-day
-    const nameT = createText(partName + (tag ? `  [${tag}]` : ''), 14, 600, COLORS.text, 'PartName');
+    // 1행: 부품명(포인트 ②: 상태 색 텍스트) + D-day
+    const nameT = createText(partName + (tag ? `  [${tag}]` : ''), 14, 600, accent, 'PartName');
     place(nameT, card, 16, 16);
 
     const dDayText = status === 'chain' ? '교체 불필요' : `D${dDay > 0 ? '-' : '+'}${Math.abs(dDay)}`;
@@ -176,10 +178,6 @@
       const lastT = createText(`최근: ${lastDate}`, 10, 400, COLORS.muted, 'LastDate');
       place(lastT, card, 16, 60);
     }
-
-    // 카드 하단 구분선
-    const sep = createRect('Sep', w, 1, COLORS.border);
-    place(sep, card, 0, cardH - 1);
 
     return card;
   }
@@ -244,20 +242,20 @@
     ];
 
     for (const data of cards) {
-      buildTicketCard(frame, 0, cardY, 375, data);
-      cardY += (data.lastDate ? 84 : 64) + 4;
+      buildTicketCard(frame, 16, cardY, 343, data);
+      cardY += (data.lastDate ? 84 : 64) + 8;
     }
 
     // 카테고리: 필터 & 공기
-    buildSectionLabel(frame, '필터 & 공기', COLORS.orange, 16, cardY + 8, 343);
+    buildSectionLabel(frame, '필터 & 공기', COLORS.orange, 16, cardY + 4, 343);
     cardY += 44;
 
-    buildTicketCard(frame, 0, cardY, 375, {
+    buildTicketCard(frame, 16, cardY, 343, {
       partName: '에어컨필터', tag: null, status: 'soon', dDay: 120, cycle: '6개월마다', nextDate: '2026-12-07', nextKm: '97,750km', lastDate: '2026-06-07',
     });
-    cardY += 88;
+    cardY += 92;
 
-    buildTicketCard(frame, 0, cardY, 375, {
+    buildTicketCard(frame, 16, cardY, 343, {
       partName: '오일필터', tag: null, status: 'urgent', dDay: -7, cycle: '7,500km마다', nextDate: '2026-06-07 경과', nextKm: '89,485km', lastDate: '2025-12-07 · 82,000km',
     });
 
@@ -622,110 +620,343 @@
   }
 
   // ─────────────────────────────
-  // SCR-03 차량 등록 폼 (375 × 812)
+  // SCR-03 공통: 헤더 + 스텝 인디케이터 셸
+  // activeStep: 0=기본정보, 1=제원선택, 2=주행정보, 3=프리셋확인
   // ─────────────────────────────
-  function buildSCR03(parentPage) {
-    const frame = createFrame('SCR-03 차량 등록 (375×812)', 375, 812);
+  function buildSCR03Shell(parentPage, frameName, activeStep, px, py) {
+    const frame = createFrame(frameName, 375, 812);
     parentPage.appendChild(frame);
-    frame.x = 0;
-    frame.y = 1720;
+    frame.x = px;
+    frame.y = py;
 
-    // 헤더
     const headerF = createFrame('Header', 375, 56, COLORS.bg2);
     place(headerF, frame, 0, 0);
-    const backT = createText('←', 18, 400, COLORS.text, 'Back');
-    place(backT, headerF, 16, 16);
-    const headerTitle = createText('차량 등록', 16, 700, COLORS.text, 'HeaderTitle');
-    place(headerTitle, headerF, 155, 16);
+    place(createText('←', 18, 400, COLORS.text, 'Back'), headerF, 16, 16);
+    place(createText('차량 등록', 16, 700, COLORS.text, 'HeaderTitle'), headerF, 147, 16);
     divider(frame, 56, 375);
 
-    // 스텝 인디케이터
-    const steps = ['기본 정보', '제원 선택', '주행 정보', '프리셋 확인'];
+    const stepLabels = ['기본 정보', '제원 선택', '주행 정보', '프리셋 확인'];
     const stepW = 375 / 4;
-    steps.forEach((s, i) => {
-      const isActive = i === 1; // Step 2 활성
-      const bar = createRect(`StepBar:${i}`, stepW - 4, 3, isActive ? COLORS.mint : COLORS.border);
+    stepLabels.forEach((s, i) => {
+      const isDone   = i < activeStep;
+      const isActive = i === activeStep;
+
+      // 상단 진행 바
+      const bar = createRect(`StepBar:${i}`, stepW - 4, 3, (isDone || isActive) ? COLORS.mint : COLORS.border);
       place(bar, frame, i * stepW + 2, 56);
 
+      // 스텝 원
       const dot = createRect(`StepDot:${i}`, 20, 20, isActive ? COLORS.mint : COLORS.bg2);
       dot.cornerRadius = 10;
+      if (isDone) {
+        dot.strokes = solidFill(COLORS.mint);
+        dot.strokeWeight = 1.5;
+        dot.strokeAlign = 'INSIDE';
+      }
       place(dot, frame, i * stepW + (stepW - 20) / 2, 64);
 
-      const numT = createText(`${i + 1}`, 10, 700, isActive ? COLORS.bg : COLORS.muted, `StepNum:${i}`);
-      place(numT, frame, i * stepW + (stepW - 6) / 2, 68);
+      // 숫자 / 완료 체크
+      const numX = isDone
+        ? i * stepW + (stepW - 8) / 2
+        : i * stepW + (stepW - 6) / 2;
+      place(createText(isDone ? '✓' : `${i + 1}`, 10, 700,
+        isActive ? COLORS.bg : isDone ? COLORS.mint : COLORS.muted, `StepNum:${i}`), frame, numX, 68);
 
-      const stepLabel = createText(s, 9, isActive ? 600 : 400, isActive ? COLORS.mint : COLORS.muted, `StepLabel:${i}`);
-      place(stepLabel, frame, i * stepW + (stepW - 28) / 2, 90);
+      // 라벨
+      place(createText(s, 9, (isActive || isDone) ? 600 : 400,
+        (isActive || isDone) ? COLORS.mint : COLORS.muted, `StepLabel:${i}`),
+        frame, i * stepW + (stepW - 28) / 2, 90);
     });
 
-    let fieldY = 120;
+    return { frame, contentY: 108 };
+  }
 
-    // Step 2: 제원 선택 (현재 단계)
-    const stepTitle = createText('Step 2 — 제원을 선택해주세요', 16, 700, COLORS.text, 'StepTitle');
-    place(stepTitle, frame, 20, fieldY);
-    fieldY += 36;
+  // ─────────────────────────────
+  // SCR-03 Step 1 — 기본 정보 (375 × 812)
+  // ─────────────────────────────
+  function buildSCR03Step1(parentPage) {
+    const { frame } = buildSCR03Shell(parentPage, 'SCR-03 Step1 기본정보 (375×812)', 0, 0, 1720);
+    let y = 108;
 
-    const fields = [
+    place(createText('Step 1 — 기본 정보를 입력하세요', 16, 700, COLORS.text, 'StepTitle'), frame, 20, y);
+    y += 36;
+
+    // 텍스트 입력 3개 (차량 별칭 / 모델명 / 차량번호)
+    const textFields = [
+      { label: '차량 별칭',   value: '내 투싼',            active: true  },
+      { label: '차량 모델명', value: '투싼 NX4 하이브리드', active: false },
+      { label: '차량번호',    value: '123가 4567',          active: false },
+    ];
+    for (const f of textFields) {
+      place(createText(f.label, 11, 500, COLORS.muted, `Label:${f.label}`), frame, 20, y);
+      y += 18;
+
+      const input = createFrame(`Input:${f.label}`, 335, 48, COLORS.bg2);
+      input.cornerRadius = 8;
+      // 포커스 중인 필드는 mint 테두리
+      input.strokes = solidFill(f.active ? COLORS.mint : COLORS.border);
+      input.strokeWeight = f.active ? 1.5 : 1;
+      input.strokeAlign = 'INSIDE';
+      place(input, frame, 20, y);
+      place(createText(f.value, 14, 400, COLORS.text, 'InputVal'), input, 14, 16);
+      y += 56;
+    }
+
+    // 제조사(좌) + 연식(우) — 2열
+    place(createText('제조사', 11, 500, COLORS.muted, 'Label:제조사'), frame, 20, y);
+    place(createText('연식',   11, 500, COLORS.muted, 'Label:연식'),   frame, 193, y);
+    y += 18;
+
+    const mfrSel = createFrame('Select:제조사', 160, 48, COLORS.bg2);
+    mfrSel.cornerRadius = 8;
+    mfrSel.strokes = solidFill(COLORS.border);
+    mfrSel.strokeWeight = 1;
+    mfrSel.strokeAlign = 'INSIDE';
+    place(mfrSel, frame, 20, y);
+    place(createText('현대(Hyundai)', 13, 500, COLORS.text, 'SelectVal'), mfrSel, 12, 16);
+    place(createText('▾', 13, 400, COLORS.muted, 'Arrow'), mfrSel, 134, 16);
+
+    const yrSel = createFrame('Select:연식', 162, 48, COLORS.bg2);
+    yrSel.cornerRadius = 8;
+    yrSel.strokes = solidFill(COLORS.border);
+    yrSel.strokeWeight = 1;
+    yrSel.strokeAlign = 'INSIDE';
+    place(yrSel, frame, 193, y);
+    place(createText('2021년', 14, 500, COLORS.text, 'SelectVal'), yrSel, 12, 16);
+    place(createText('▾', 13, 400, COLORS.muted, 'Arrow'), yrSel, 132, 16);
+    y += 56;
+
+    // 다음 버튼 (단일)
+    const nextBtn = createFrame('NextBtn', 335, 48, COLORS.mint);
+    nextBtn.cornerRadius = 10;
+    place(nextBtn, frame, 20, 752);
+    place(createText('다음 — 제원 선택', 15, 700, COLORS.bg, 'BtnText'), nextBtn, 106, 14);
+
+    return frame;
+  }
+
+  // ─────────────────────────────
+  // SCR-03 Step 2 — 제원 선택 (375 × 812)
+  // ─────────────────────────────
+  function buildSCR03Step2(parentPage) {
+    const { frame } = buildSCR03Shell(parentPage, 'SCR-03 Step2 제원선택 (375×812)', 1, 420, 1720);
+    let y = 108;
+
+    place(createText('Step 2 — 제원을 선택해주세요', 16, 700, COLORS.text, 'StepTitle'), frame, 20, y);
+    y += 36;
+
+    const selFields = [
       { label: '차종', value: '중형 SUV' },
       { label: '연료', value: '하이브리드(HEV)' },
       { label: '변속기', value: '자동변속기(AT)' },
     ];
+    for (const f of selFields) {
+      place(createText(f.label, 11, 500, COLORS.muted, `Label:${f.label}`), frame, 20, y);
+      y += 18;
 
-    for (const field of fields) {
-      const labelT = createText(field.label, 11, 500, COLORS.muted, `Label:${field.label}`);
-      place(labelT, frame, 20, fieldY);
-      fieldY += 20;
-
-      const select = createFrame(`Select:${field.label}`, 335, 44, COLORS.bg2);
-      select.cornerRadius = 8;
-      place(select, frame, 20, fieldY);
-
-      const valT = createText(field.value, 14, 500, COLORS.text, 'SelectVal');
-      place(valT, select, 16, 12);
-
-      const arrow = createText('▾', 14, 400, COLORS.muted, 'Arrow');
-      place(arrow, select, 308, 12);
-
-      fieldY += 56;
+      const sel = createFrame(`Select:${f.label}`, 335, 48, COLORS.bg2);
+      sel.cornerRadius = 8;
+      sel.strokes = solidFill(COLORS.border);
+      sel.strokeWeight = 1;
+      sel.strokeAlign = 'INSIDE';
+      place(sel, frame, 20, y);
+      place(createText(f.value, 14, 500, COLORS.text, 'SelectVal'), sel, 16, 16);
+      place(createText('▾', 14, 400, COLORS.muted, 'Arrow'), sel, 308, 16);
+      y += 56;
     }
 
-    divider(frame, fieldY + 8, 375);
-    fieldY += 24;
+    divider(frame, y + 8, 375);
+    y += 24;
 
-    // Step 4 미리보기: 프리셋 항목
-    const presetTitle = createText('프리셋 미리보기 (Step 4)', 13, 600, COLORS.text, 'PresetTitle');
-    place(presetTitle, frame, 20, fieldY);
-    fieldY += 28;
+    // 프리셋 자동 적용 안내
+    const infoBox = createRect('InfoBg', 335, 52, COLORS.mint, 0.07);
+    infoBox.cornerRadius = 8;
+    place(infoBox, frame, 20, y);
+    place(createText('💡 선택한 제원(HEV · AT)으로\n정비 주기 프리셋 17항목이 Step 4에서 자동 제안됩니다.', 10, 400, COLORS.mint, 'InfoText'), frame, 34, y + 8);
 
-    const presets = [
-      { name: '엔진오일', period: '7,500km', checked: true },
-      { name: '오일필터', period: '7,500km', checked: true },
-      { name: '에어클리너', period: '40,000km', checked: true },
-      { name: '타이밍체인', period: '교환 불필요', checked: true },
-      { name: '타이밍벨트', period: '—  (HEV 해당 없음)', checked: false },
+    // 이전 / 다음 버튼
+    const prevBtn = createFrame('PrevBtn', 160, 48, COLORS.bg3);
+    prevBtn.cornerRadius = 10;
+    prevBtn.strokes = solidFill(COLORS.border);
+    prevBtn.strokeWeight = 1;
+    prevBtn.strokeAlign = 'INSIDE';
+    place(prevBtn, frame, 20, 752);
+    place(createText('← 이전', 14, 500, COLORS.muted, 'BtnText'), prevBtn, 52, 15);
+
+    const nextBtn = createFrame('NextBtn', 163, 48, COLORS.mint);
+    nextBtn.cornerRadius = 10;
+    place(nextBtn, frame, 192, 752);
+    place(createText('다음 →', 14, 700, COLORS.bg, 'BtnText'), nextBtn, 54, 15);
+
+    return frame;
+  }
+
+  // ─────────────────────────────
+  // SCR-03 Step 3 — 주행 정보 (375 × 812)
+  // ─────────────────────────────
+  function buildSCR03Step3(parentPage) {
+    const { frame } = buildSCR03Shell(parentPage, 'SCR-03 Step3 주행정보 (375×812)', 2, 840, 1720);
+    let y = 108;
+
+    place(createText('Step 3 — 주행 정보를 입력하세요', 16, 700, COLORS.text, 'StepTitle'), frame, 20, y);
+    y += 36;
+
+    // 현재 주행거리 (포커스 상태)
+    place(createText('현재 주행거리 (km)', 11, 500, COLORS.muted, 'Label:현재km'), frame, 20, y);
+    y += 18;
+    const odoInput = createFrame('Input:현재km', 335, 52, COLORS.bg2);
+    odoInput.cornerRadius = 8;
+    odoInput.strokes = solidFill(COLORS.mint);
+    odoInput.strokeWeight = 1.5;
+    odoInput.strokeAlign = 'INSIDE';
+    place(odoInput, frame, 20, y);
+    place(createText('89,660', 22, 600, COLORS.text, 'KmVal'), odoInput, 14, 14);
+    place(createText('km', 12, 400, COLORS.muted, 'KmUnit'), odoInput, 298, 19);
+    y += 60;
+
+    // 연간 주행거리
+    place(createText('연간 주행거리 (km/년)', 11, 500, COLORS.muted, 'Label:연간km'), frame, 20, y);
+    y += 18;
+    const annInput = createFrame('Input:연간km', 335, 52, COLORS.bg2);
+    annInput.cornerRadius = 8;
+    annInput.strokes = solidFill(COLORS.border);
+    annInput.strokeWeight = 1;
+    annInput.strokeAlign = 'INSIDE';
+    place(annInput, frame, 20, y);
+    place(createText('18,000', 22, 600, COLORS.text, 'AnnVal'), annInput, 14, 14);
+    place(createText('km/년', 12, 400, COLORS.muted, 'AnnUnit'), annInput, 278, 19);
+    y += 60;
+
+    // 월평균 파생값 안내 박스
+    const derivedBox = createFrame('Derived', 335, 36, COLORS.bg3);
+    derivedBox.cornerRadius = 6;
+    place(derivedBox, frame, 20, y);
+    place(createText('→  월평균', 11, 400, COLORS.muted, 'DerivedLabel'), derivedBox, 14, 10);
+    place(createText('1,500 km / 월', 12, 600, COLORS.mint, 'DerivedVal'), derivedBox, 84, 9);
+    place(createText('(연간 ÷ 12, 교환 시기 계산에 사용)', 9, 400, COLORS.muted, 'DerivedNote'), derivedBox, 204, 11);
+    y += 48;
+
+    // 최초 등록일
+    place(createText('최초 등록일', 11, 500, COLORS.muted, 'Label:등록일'), frame, 20, y);
+    y += 18;
+    const dateInput = createFrame('Input:등록일', 335, 48, COLORS.bg2);
+    dateInput.cornerRadius = 8;
+    dateInput.strokes = solidFill(COLORS.border);
+    dateInput.strokeWeight = 1;
+    dateInput.strokeAlign = 'INSIDE';
+    place(dateInput, frame, 20, y);
+    place(createText('2021 - 01 - 15', 14, 500, COLORS.text, 'DateVal'), dateInput, 14, 16);
+    place(createText('📅', 14, 400, COLORS.muted, 'CalIcon'), dateInput, 300, 16);
+    y += 60;
+
+    // 안내 박스
+    const infoBox = createRect('InfoBg', 335, 48, COLORS.amber, 0.07);
+    infoBox.cornerRadius = 8;
+    place(infoBox, frame, 20, y);
+    place(createText('💡 정확한 교환 시기 계산을 위해 실제\n현재 주행거리를 km 단위로 입력하세요.', 10, 400, COLORS.amber, 'InfoText'), frame, 34, y + 8);
+
+    // 이전 / 다음 버튼
+    const prevBtn3 = createFrame('PrevBtn', 160, 48, COLORS.bg3);
+    prevBtn3.cornerRadius = 10;
+    prevBtn3.strokes = solidFill(COLORS.border);
+    prevBtn3.strokeWeight = 1;
+    prevBtn3.strokeAlign = 'INSIDE';
+    place(prevBtn3, frame, 20, 752);
+    place(createText('← 이전', 14, 500, COLORS.muted, 'BtnText'), prevBtn3, 52, 15);
+
+    const nextBtn3 = createFrame('NextBtn', 163, 48, COLORS.mint);
+    nextBtn3.cornerRadius = 10;
+    place(nextBtn3, frame, 192, 752);
+    place(createText('다음 →', 14, 700, COLORS.bg, 'BtnText'), nextBtn3, 54, 15);
+
+    return frame;
+  }
+
+  // ─────────────────────────────
+  // SCR-03 Step 4 — 프리셋 확인 (375 × 812)
+  // ─────────────────────────────
+  function buildSCR03Step4(parentPage) {
+    const { frame } = buildSCR03Shell(parentPage, 'SCR-03 Step4 프리셋확인 (375×812)', 3, 1260, 1720);
+    let y = 108;
+
+    place(createText('Step 4 — 프리셋을 확인하세요', 16, 700, COLORS.text, 'StepTitle'), frame, 20, y);
+    y += 28;
+
+    // 제원 요약 칩 (차종 / 연료 / 변속기)
+    const specs   = ['중형 SUV', 'HEV', '자동(AT)'];
+    const chipClr = [COLORS.purple, COLORS.mint, COLORS.cyan];
+    let chipX = 20;
+    for (let i = 0; i < specs.length; i++) {
+      const chip = createFrame(`Chip:${specs[i]}`, 76, 24, COLORS.bg3);
+      chip.cornerRadius = 12;
+      chip.strokes = solidFill(chipClr[i]);
+      chip.strokeWeight = 1;
+      chip.strokeAlign = 'INSIDE';
+      place(chip, frame, chipX, y);
+      place(createText(specs[i], 10, 600, chipClr[i], 'ChipText'), chip, 10, 6);
+      chipX += 84;
+    }
+    y += 36;
+
+    place(createText('NX4 HEV · AT 제원 기준 — 17항목 자동 적용', 10, 400, COLORS.muted, 'SubNote'), frame, 20, y);
+    y += 18;
+    divider(frame, y, 375);
+    y += 10;
+
+    // 프리셋 목록 (11개 주요 항목)
+    const presets4 = [
+      { name: '엔진오일',        period: '7,500 km',    on: true,  color: COLORS.mint   },
+      { name: '오일필터',        period: '7,500 km',    on: true,  color: COLORS.mint   },
+      { name: '스파크플러그',    period: '60,000 km',   on: true,  color: COLORS.mint   },
+      { name: '타이밍체인',      period: '교환 불필요', on: true,  color: COLORS.cyan   },
+      { name: '타이밍벨트',      period: 'HEV 해당없음',on: false, color: COLORS.muted  },
+      { name: '에어클리너',      period: '40,000 km',   on: true,  color: COLORS.orange },
+      { name: '에어컨필터',      period: '6개월',       on: true,  color: COLORS.orange },
+      { name: '변속기오일',      period: '60,000 km',   on: true,  color: COLORS.purple },
+      { name: '브레이크액',      period: '2년',         on: true,  color: COLORS.rose   },
+      { name: '브레이크패드(전)', period: '40,000 km',  on: true,  color: COLORS.rose   },
+      { name: '브레이크패드(후)', period: '60,000 km',  on: true,  color: COLORS.rose   },
     ];
 
-    for (const p of presets) {
+    for (const p of presets4) {
+      if (y + 40 > 736) break; // 버튼 영역 침범 방지
       const row = createFrame(`PresetRow:${p.name}`, 335, 40, COLORS.bg2);
       row.cornerRadius = 6;
-      place(row, frame, 20, fieldY);
+      if (!p.on) row.opacity = 0.4;
+      place(row, frame, 20, y);
 
-      const check = createText(p.checked ? '☑' : '☐', 14, 400, p.checked ? COLORS.mint : COLORS.muted, 'Check');
-      place(check, row, 12, 10);
-      const nameT2 = createText(p.name, 12, p.checked ? 500 : 400, p.checked ? COLORS.text : COLORS.muted, 'PresetName');
-      place(nameT2, row, 36, 12);
-      const periodT = createText(p.period, 11, 400, COLORS.muted, 'Period');
-      place(periodT, row, 220, 13);
+      // 체크 / 취소 마크
+      place(createText(p.on ? '✓' : '✕', 11, 700, p.on ? p.color : COLORS.muted, 'Check'), row, 12, 14);
 
-      fieldY += 48;
+      // 부품명 — on 상태는 상태 컬러로, off는 muted
+      place(createText(p.name, 12, p.on ? 500 : 400, p.on ? COLORS.text : COLORS.muted, 'PartName'), row, 32, 13);
+
+      // 교환 주기
+      place(createText(p.period, 11, 400, COLORS.muted, 'Period'), row, 210, 14);
+
+      // 상태 색상 도트
+      if (p.on) {
+        const dot = createRect('AccentDot', 4, 4, p.color);
+        dot.cornerRadius = 2;
+        place(dot, row, 320, 18);
+      }
+
+      y += 46;
     }
 
-    // 완료 버튼
-    const completeBtn = createFrame('CompleteBtn', 335, 48, COLORS.mint);
-    completeBtn.cornerRadius = 10;
-    place(completeBtn, frame, 20, 752);
-    const completeBtnT = createText('완료 — 차량 등록', 15, 700, COLORS.bg, 'CompleteBtnText');
-    place(completeBtnT, completeBtn, 100, 14);
+    // 이전 / 완료 버튼
+    const prevBtn4 = createFrame('PrevBtn', 160, 48, COLORS.bg3);
+    prevBtn4.cornerRadius = 10;
+    prevBtn4.strokes = solidFill(COLORS.border);
+    prevBtn4.strokeWeight = 1;
+    prevBtn4.strokeAlign = 'INSIDE';
+    place(prevBtn4, frame, 20, 752);
+    place(createText('← 이전', 14, 500, COLORS.muted, 'BtnText'), prevBtn4, 52, 15);
+
+    const doneBtn = createFrame('DoneBtn', 163, 48, COLORS.mint);
+    doneBtn.cornerRadius = 10;
+    place(doneBtn, frame, 192, 752);
+    place(createText('완료 등록', 14, 700, COLORS.bg, 'BtnText'), doneBtn, 42, 15);
 
     return frame;
   }
@@ -769,23 +1000,33 @@
   // ─────────────────────────────
   // 메인 실행
   // ─────────────────────────────
-  await loadFonts();
+  // try/catch로 감싸 어떤 에러든 closePlugin으로 종료시킨다.
+  // (async IIFE의 미처리 rejection은 Figma가 잡지 못해 "Running…" 무한 로딩이 됨)
+  try {
+    await loadFonts();
 
-  const page = figma.currentPage;
-  page.name = 'carmaint UI';
+    const page = figma.currentPage;
+    page.name = 'carmaint UI';
 
-  figma.viewport.zoom = 0.15;
+    figma.viewport.zoom = 0.15;
 
-  await buildSCR01Mobile(page);
-  await buildSCR01Tablet(page);
-  await buildSCR02BottomSheet(page);
-  await buildSCR02SidePanel(page);
-  await buildSCR03(page);
-  await buildEmptyState(page);
+    await buildSCR01Mobile(page);
+    await buildSCR01Tablet(page);
+    await buildSCR02BottomSheet(page);
+    await buildSCR02SidePanel(page);
+    await buildSCR03Step1(page);
+    await buildSCR03Step2(page);
+    await buildSCR03Step3(page);
+    await buildSCR03Step4(page);
+    await buildEmptyState(page);
 
-  figma.viewport.scrollAndZoomIntoView(page.children);
+    figma.viewport.scrollAndZoomIntoView(page.children);
 
-  figma.notify('✅ carmaint 화면 6개 생성 완료!', { timeout: 3000 });
-  figma.closePlugin();
+    figma.notify('✅ carmaint 화면 9개 생성 완료!', { timeout: 3000 });
+    figma.closePlugin();
+  } catch (e) {
+    figma.notify('❌ 생성 실패: ' + (e && e.message ? e.message : String(e)), { error: true, timeout: 5000 });
+    figma.closePlugin('생성 실패: ' + (e && e.message ? e.message : String(e)));
+  }
 
 })();

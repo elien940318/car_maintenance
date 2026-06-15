@@ -1,7 +1,7 @@
 # carmaint — 프로젝트 현황 (Project Status)
 
-> 마지막 업데이트: 2026-06-14  
-> 현재 단계: **01_planning 완료 → 02_plan 작성 대기**
+> 마지막 업데이트: 2026-06-15  
+> 현재 단계: **02_plan 완료 → 03_build(Phase 0) 착수 대기**
 
 ---
 
@@ -156,7 +156,21 @@ WHERE fuel_type_code = :vehicleFuel
 
 ---
 
-## 7. 다음 세션에서 할 작업: Phase 0 착수
+## 7. Figma UI 플러그인 현황 (2026-06-15 추가)
+
+`sdd/99_toolchain/figma_plugin/carmaint_screens.js` 로 화면 9개 자동 생성 완료.
+
+| 완료 항목 | 내용 |
+|-----------|------|
+| SCR-01 모바일/태블릿+ | 티켓 카드 상태색 → 텍스트+테두리 포인트, 좌우 여백 16px |
+| SCR-02 바텀 시트/사이드 패널 | 교환완료 인라인 입력 포함 |
+| SCR-03 4단계 | Step1(기본정보) · Step2(제원선택) · Step3(주행정보) · Step4(프리셋확인) |
+| SCR-01 빈 상태 | 차량 미등록 초기 화면 |
+| 에러 핸들링 | try/catch + `figma.closePlugin` — 무한 로딩 버그 수정 |
+
+---
+
+## 8. 다음 세션에서 할 작업: Phase 0 착수
 
 `sdd/02_plan/` 기능별 실행 계획 파일 작성 완료 (2026-06-14).
 
