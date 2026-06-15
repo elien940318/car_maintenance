@@ -1,0 +1,30 @@
+#!/bin/sh
+# carmaint pre-commit hook
+# 커밋 직전 Claude Code 자동 메모리(~/.claude/projects/<slug>/memory)를
+# repo 미러(.claude/memory)로 동기화하고 스테이징한다.
+# 메모리 디렉터리가 없으면 조용히 통과(다른 환경/CI 안전).
+
+dest=".claude/memory"
+
+# repo 절대 경로 → Claude Code project slug 산출
+if command -v cygpath >/dev/null 2>&1; then
+  slug=$(cygpath -w "$(pwd)" | tr 'A-Z' 'a-z' | sed 's/[^a-z0-9]/-/g')
+else
+  slug=$(pwd | sed 's#^/##' | tr 'A-Z' 'a-z' | sed 's/[^a-z0-9]/-/g')
+fi
+
+src="$HOME/.claude/projects/$slug/memory"
+[ -d "$src" ] || exit 0
+
+mkdir -p "$dest"
+
+# SETUP.md(가이드)는 repo 전용이므로 미러 대상에서 제외하고 복사
+for f in "$src"/*.md; do
+  [ -e "$f" ] || continue
+  b=$(basename "$f")
+  [ "$b" = "SETUP.md" ] && continue
+  cp "$f" "$dest/$b"
+done
+
+git add "$dest"
+exit 0

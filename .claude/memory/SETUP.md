@@ -56,17 +56,31 @@ echo "복원 완료: $dest"
 ## 3. 메모리를 수정했을 때 (역방향 동기화)
 
 세션 중 Claude가 메모리를 갱신하면 **실제 경로**가 최신이고 이 미러는 옛 버전이 된다.
-커밋 전 아래로 미러를 갱신한 뒤 함께 커밋한다.
 
-### PowerShell
-```powershell
-$slug = "c--project-car-maintenance"
-$src = "$env:USERPROFILE\.claude\projects\$slug\memory"
-Copy-Item "$src\*.md" -Destination ".claude\memory" -Force
+### 자동 (pre-commit 훅) — 권장
+
+이 repo에는 `.githooks/pre-commit` 훅이 포함돼 있어, **커밋할 때마다** 실제 메모리 경로를
+`.claude/memory/`로 자동 복사하고 스테이징한다. (slug는 훅이 경로에서 자동 산출, SETUP.md는 제외)
+
+클론 후 **한 번만** 훅 경로를 활성화하면 된다:
+
+```bash
+git config core.hooksPath .githooks
 ```
 
-### Git Bash
+> 훅은 메모리 디렉터리가 없으면 조용히 통과하므로 CI·타 환경에서도 안전하다.
+
+### 수동 (훅 미사용 시 폴백)
+
+```powershell
+# PowerShell
+$slug = "c--project-car-maintenance"
+$src = "$env:USERPROFILE\.claude\projects\$slug\memory"
+Copy-Item "$src\*.md" -Destination ".claude\memory" -Force -Exclude "SETUP.md"
+```
+
 ```bash
+# Git Bash
 slug="c--project-car-maintenance"
 cp "$HOME/.claude/projects/$slug/memory/"*.md .claude/memory/
 ```
