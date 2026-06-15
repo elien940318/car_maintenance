@@ -1,7 +1,7 @@
 # carmaint — 프로젝트 현황 (Project Status)
 
 > 마지막 업데이트: 2026-06-15  
-> 현재 단계: **02_plan 완료 → 03_build(Phase 0) 착수 대기**
+> 현재 단계: **03_build Phase 0 완료 → Phase 1(DB 스키마) 착수 대기**
 
 ---
 
@@ -12,7 +12,7 @@
 | 00_sources (원본 요구사항) | ✅ 완료 | 투싼 NX4 HEV 프로토타입 기반 분석 |
 | 01_planning (명세 작성) | ✅ **완료** | 기능·화면·아키텍처·데이터·테스트 명세 |
 | 02_plan (실행 계획) | ✅ **완료** | 기능별 구현 체크리스트 작성 완료 (2026-06-14) |
-| 03_build (구현) | ⏳ **다음 작업** | Phase 0 프로젝트 골격 생성부터 착수 |
+| 03_build (구현) | 🔨 **진행 중** | Phase 0 완료(골격 생성), Phase 1(DB) 착수 대기 |
 | 04_verify (검증) | 🔲 미착수 | |
 
 ---
@@ -174,41 +174,23 @@ WHERE fuel_type_code = :vehicleFuel
 
 ---
 
-## 8. 다음 세션에서 할 작업: Phase 0 착수
+## 8. 다음 세션에서 할 작업: Phase 1 — DB 스키마
 
-`sdd/02_plan/` 기능별 실행 계획 파일 작성 완료 (2026-06-14).
+Phase 0 골격 생성 완료. Phase 1에서 DB 스키마를 구현한다.
+
+**다음 착수: Phase 1 — DB 스키마 & 시드 데이터**
 
 ```
-sdd/02_plan/
-├── 03_architecture/
-│   └── tech_stack_decision.md      ✅ Phase 0~4 체크리스트
-├── 01_feature/
-│   ├── vehicle_todos.md             ✅ AC-V1~V10 실행 계획
-│   ├── maintenance_todos.md         ✅ AC-M1~M16 실행 계획
-│   └── visualization_todos.md       ✅ AC-VZ1~VZ23 실행 계획
-└── 10_test/
-    └── regression_verification.md   ✅ 회귀 검증 범위 정의
+주요 작업:
+1. schema.prisma 에 9개 엔티티 모델 정의
+2. seed.ts 작성 (코드 마스터 7종 + 프리셋 ~117개)
+3. prisma migrate dev --name init 실행
+4. Nest.js PrismaModule / PrismaService 구성
 ```
 
-**다음 착수: Phase 0 — 프로젝트 골격 생성**  
-→ `sdd/02_plan/03_architecture/tech_stack_decision.md` Phase 0 체크리스트 참고
-
-### Phase 0 — 프로젝트 골격 (최우선 착수)
-
-> 상세: [`sdd/02_plan/03_architecture/tech_stack_decision.md`](02_plan/03_architecture/tech_stack_decision.md)
-
-```bash
-# 1. 모노레포 초기화
-mkdir apps packages
-npx create-next-app@latest apps/web --typescript --tailwind --app
-npx @nestjs/cli new apps/api --package-manager pnpm
-
-# 2. Prisma 초기화
-cd apps/api && npx prisma init --datasource-provider sqlite
-
-# 3. pnpm workspace 설정
-# → pnpm-workspace.yaml 생성
-```
+→ `sdd/02_plan/03_architecture/tech_stack_decision.md` Phase 1 체크리스트 참고  
+→ `sdd/01_planning/04_data/data_model.md` 엔티티 명세 참고  
+→ `sdd/99_toolchain/seed_data/code_and_presets.md` 시드 데이터 참고
 
 ---
 

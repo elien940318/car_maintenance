@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+
+# 빌드 스크립트 허용 목록
+allowBuilds:
+  '@nestjs/core': true
+  '@prisma/engines': true
+  prisma: true
