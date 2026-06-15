@@ -50,8 +50,8 @@ the system shall `next_km = lkm + pkm`으로 계산하고,
 the system shall `next_date = ldt + pmo 개월`로 계산하고,
 `next_km = current_km + months_diff(today, next_date) × monthly_km`으로 환산한다.
 
-**AC-M7** When 여러 항목을 동시에 교환했을 때,
-the system shall 일괄 교환 기록 기능을 통해 선택한 항목 전체의 `ldt`와 `lkm`을 한 번에 업데이트한다.
+**AC-M7** ~~When 여러 항목을 동시에 교환했을 때, the system shall 일괄 교환 기록 기능을 통해 선택한 항목 전체의 `ldt`와 `lkm`을 한 번에 업데이트한다.~~
+> **[삭제됨 2026-06-15]** 일괄 교환 기능 제외. 교환은 부품별 단건 기록(AC-M12·M13)으로만 처리한다. (#15 결정) 번호는 유지하되 구현하지 않음.
 
 ### 상태 분류
 
@@ -118,7 +118,7 @@ the system shall 해당 부품의 상태를 재계산하여 알림 카드 목록
 | AC-M4 | unit: 교환 기록 저장 및 재계산 트리거 |
 | AC-M5 | unit: pkm 계산 정확성 |
 | AC-M6 | unit: pmo 계산 정확성 |
-| AC-M7 | unit + e2e: 일괄 교환 기록 |
+| ~~AC-M7~~ | ~~일괄 교환 기록~~ — **삭제됨 (#15, 2026-06-15)** |
 | AC-M8 | unit: 상태 분류 경계값 |
 | AC-M9 | unit: 초과 항목 urgent 처리 |
 | AC-M10 | unit: 알림 카드 정렬 |

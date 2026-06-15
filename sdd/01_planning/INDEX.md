@@ -1,7 +1,7 @@
 # 01_planning INDEX
 
 > carmaint SDD 계획 문서 목록.  
-> **상태: 전체 완료** (2026-06-14) — 총 AC 49개 확정
+> **상태: 전체 완료** (2026-06-15 갱신) — 총 AC 48개 확정 (M7 삭제)
 
 ---
 
@@ -10,10 +10,10 @@
 | 문서 | 도메인 | AC | 상태 |
 |------|--------|-----|------|
 | [vehicle_feature_spec.md](01_feature/vehicle_feature_spec.md) | 차량 등록·관리·제원 입력·프리셋 연동·1:1 관계·빈 상태 | V1~V10 (10개) | ✅ 완료 |
-| [maintenance_schedule_feature_spec.md](01_feature/maintenance_schedule_feature_spec.md) | 정비 일정 계산·상태 분류·프리셋·교환완료 | M1~M16 (16개) | ✅ 완료 |
+| [maintenance_schedule_feature_spec.md](01_feature/maintenance_schedule_feature_spec.md) | 정비 일정 계산·상태 분류·프리셋·교환완료 | M1~M16 중 M7 삭제 (15개) | ✅ 완료 |
 | [visualization_feature_spec.md](01_feature/visualization_feature_spec.md) | 티켓 카드·간트·테이블·패널·색상 규칙 | VZ1~VZ23 (23개) | ✅ 완료 |
 
-**총 AC: 49개**
+**총 AC: 48개**
 
 ---
 
@@ -38,7 +38,7 @@
 
 | 문서 | 내용 | 상태 |
 |------|------|------|
-| [data_model.md](04_data/data_model.md) | 엔티티 8개·코드 테이블·프리셋·계산 뷰 | ✅ 완료 |
+| [data_model.md](04_data/data_model.md) | 엔티티 9개(ManufacturerCode 포함)·코드 테이블·프리셋·계산 뷰 | ✅ 완료 |
 
 ---
 

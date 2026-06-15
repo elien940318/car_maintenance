@@ -48,6 +48,22 @@
 
 ---
 
+## 3-1. ManufacturerCode (제조사 코드)
+
+> 국산 브랜드 위주 + `기타`(직접 입력). 수입차는 `기타`로 처리한다. (#1 결정, 2026-06-15)
+
+| code | label_ko | sort_order |
+|------|----------|-----------|
+| hyundai | 현대 | 1 |
+| kia | 기아 | 2 |
+| genesis | 제네시스 | 3 |
+| kg_mobility | KG모빌리티 | 4 |
+| renault_korea | 르노코리아 | 5 |
+| chevrolet | 쉐보레(한국GM) | 6 |
+| etc | 기타 | 99 |
+
+---
+
 ## 4. MaintenancePartMaster (부품 마스터)
 
 | part_key | name_ko | category | applicable_fuel_codes | sort_order |
@@ -320,5 +336,6 @@
 | 차종 코드 | 10 |
 | 연료 코드 | 6 |
 | 변속기 코드 | 6 |
+| 제조사 코드 | 7 (국산 6 + 기타) |
 | 부품 마스터 | 23 |
-| 프리셋 레코드 (예상) | 약 88개 |
+| 프리셋 레코드 (예상) | 약 88개 (전체 연료×변속기 조합) |

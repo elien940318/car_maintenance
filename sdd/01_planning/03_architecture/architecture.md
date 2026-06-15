@@ -61,29 +61,40 @@ MaintenancePart 1 ──< MaintenanceRecord N
 
 ```
 inputs:
-  - current_km: int
-  - monthly_km: int
-  - today: date
-  - last_km: int | null
-  - last_date: date | null
-  - interval_km: int | null   (pkm)
-  - interval_months: int | null (pmo)
+  - today: date                  // 실제 오늘 (new Date(), KST). D-day·상태·간트 TODAY 기준
+  - reference_date: date         // current_km 측정일 (= 주행거리 기준일)
+  - current_km: int              // reference_date 시점 주행거리
+  - monthly_km: int              // annual_km/12 반올림 (≥1 보장)
+  - last_km: int | null          // 교환 이력 없으면 null → 폴백
+  - last_date: date | null       // 교환 이력 없으면 null → 폴백
+  - interval_km: int | null      // pkm (XOR)
+  - interval_months: int | null  // pmo (XOR)
   - is_chain: bool
 
 outputs:
   - next_km: int | null
   - next_date: date | null
-  - status: 'urgent' | 'soon' | 'ok' | 'chain'
-  - days_remaining: int | null   (음수 = 초과)
+  - days_remaining: int | null            // next_date - today (음수 = 초과)
+  - status: 'urgent'|'soon'|'ok'|'chain'|'unknown'
+  - baseline: 'recorded' | 'estimated'     // 폴백(추정 기준점) 사용 여부
 ```
 
 계산 규칙:
 1. `is_chain=true` → 모든 output null, status='chain'
-2. `interval_km` 방식: `next_km = last_km + interval_km`
-   → `next_date = today + (next_km - current_km) / monthly_km * 30`
-3. `interval_months` 방식: `next_date = last_date + interval_months`
-   → `next_km = current_km + months_diff(today, next_date) * monthly_km`
-4. 상태: `days_remaining < 0` → urgent / `< 90` → urgent / `< 180` → soon / else → ok
+2. `monthly_km < 1` → 예정일 계산 불가. next_km/next_date/days_remaining=null, status='unknown'
+3. **기준일 보정**: current_km는 reference_date 시점 값이므로 today 기준으로 환산한다.
+   `current_km_today = current_km + (today - reference_date)/30 × monthly_km`
+   (reference_date = today면 보정 0)
+4. **이력 폴백**: last_km/last_date가 null이면 등록 시점을 가상 최초 교환점으로 간주, `baseline='estimated'`.
+   - pkm: `last_km := current_km`, `last_date := reference_date`
+   - pmo: `last_date := reference_date`, `last_km := current_km`
+   - 이력 존재 시 `baseline='recorded'`
+5. `interval_km`(pkm) 방식: `next_km = last_km + interval_km`
+   → `next_date = today + (next_km - current_km_today) / monthly_km × 30`
+6. `interval_months`(pmo) 방식: `next_date = last_date + interval_months`
+   → `next_km = current_km_today + months_diff(today, next_date) × monthly_km`
+7. `days_remaining = next_date - today`
+8. 상태: `days_remaining < 90` → urgent(음수 초과 포함) / `< 180` → soon / else → ok
 
 ### AlertAggregator
 

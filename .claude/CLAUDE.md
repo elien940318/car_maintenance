@@ -37,16 +37,16 @@ carmaint/
 │   ├── 05_operate/       # 운영 기록
 │   └── 99_toolchain/     # 자동화 스크립트, 시드 데이터
 │       └── seed_data/    # 코드 마스터 + 정비 주기 프리셋
-└── packages/             # 공유 타입 패키지 (선택)
+└── packages/             # 공유 타입 패키지 (미사용 — #14, web·api 각자 타입 정의)
 ```
 
 ---
 
 ## Project Status
 
-- **현재 단계**: 01_planning 완료 → **02_plan 작성 중**
+- **현재 단계**: 02_plan 완료 → **03_build(Phase 0) 착수 대기**
 - **기술 스택**: 확정 (Next.js + Nest.js + Prisma + SQLite + shadcn/ui + Zustand + TanStack Query)
-- **AC 총계**: 49개 (V10 + M16 + VZ23)
+- **AC 총계**: 48개 (V10 + M15[M7 삭제] + VZ23)
 - **전체 현황**: `sdd/PROJECT_STATUS.md`
 - **참고 프로토타입**: `D:\prj\hybrid_schedule_v2.html` (투싼 NX4 HEV)
 
@@ -101,6 +101,9 @@ carmaint/
 | soon | amber `#fbbf24` | 90~179일 |
 | ok | green `#22c55e` | 180일 이상 |
 | chain | cyan `#38bdf8` | 교환 불필요 |
+| unknown | muted `#6b7a99` | 계산 불가 (monthly_km<1 등) |
+
+> 상태색은 배경 tint가 아니라 카드 테두리(stroke) + 부품명 텍스트 색으로 표현한다.
 
 ### 교환 주기 계산
 

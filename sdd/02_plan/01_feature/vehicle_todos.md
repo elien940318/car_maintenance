@@ -2,7 +2,7 @@
 
 > 참고: [sdd/01_planning/01_feature/vehicle_feature_spec.md](../../01_planning/01_feature/vehicle_feature_spec.md)  
 > 상태: 대기 (Phase 0 완료 후 착수)  
-> 마지막 업데이트: 2026-06-14
+> 마지막 업데이트: 2026-06-15
 
 ---
 
@@ -10,7 +10,7 @@
 
 | 레이어 | 대상 |
 |--------|------|
-| DB (Prisma) | VehicleTypeCode, FuelTypeCode, TransmissionTypeCode, Vehicle 모델 정의 및 마이그레이션 |
+| DB (Prisma) | VehicleTypeCode, FuelTypeCode, TransmissionTypeCode, ManufacturerCode, Vehicle 모델 정의 및 마이그레이션 |
 | 시드 | 코드 마스터 3개 테이블 적재 (code_and_presets.md 기준) |
 | API (Nest.js) | VehicleModule (Controller / Service / DTO), PresetModule (프리셋 조회) |
 | UI (Next.js) | SCR-03 (4단계 차량 등록·수정 폼), 빈 상태 화면, 헤더 차량 정보 표시 |
@@ -50,15 +50,18 @@
 > 진행 상태 표기: `[ ]` 미착수 / `[→]` 진행 중 / `[x]` 완료
 
 - [ ] `schema.prisma`: VehicleTypeCode 모델 정의 (code PK, label_ko, sort_order)
-- [ ] `schema.prisma`: FuelTypeCode 모델 정의 (code PK, label_ko, 적용 여부 플래그 6개, sort_order)
+- [ ] `schema.prisma`: FuelTypeCode 모델 정의 (code PK, label_ko, 적용 여부 플래그 5개[has_engine·has_spark_plug·has_glow_plug·has_dpf·has_hv_battery], sort_order)
 - [ ] `schema.prisma`: TransmissionTypeCode 모델 정의 (code PK, label_ko, sort_order)
+- [ ] `schema.prisma`: ManufacturerCode 모델 정의 (code PK, label_ko, sort_order) — #1 신규 코드테이블
 - [ ] `schema.prisma`: Vehicle 모델 정의
+  - 기본 정보 필드: name(별칭), model_name, license_plate (engine_code는 삭제, #1)
   - `monthly_km`은 DB 저장 필드 (annual_km 변경 시 서비스 레이어에서 갱신)
-  - FK: vehicle_type_code, fuel_type_code, transmission_code
+  - FK: vehicle_type_code, fuel_type_code, transmission_code, manufacturer_code(nullable)
 - [ ] 마이그레이션 실행: `npx prisma migrate dev --name init-vehicle`
 - [ ] `seed.ts`: VehicleTypeCode 10개 값 적재
 - [ ] `seed.ts`: FuelTypeCode 6개 값 적재
 - [ ] `seed.ts`: TransmissionTypeCode 6개 값 적재
+- [ ] `seed.ts`: ManufacturerCode 7개 값 적재 (국산 6 + 기타)
 
 ### Phase 2 — Nest.js API
 
@@ -75,6 +78,7 @@
     - `update()`: current_km·annual_km 변경 시 monthly_km 재계산
     - `calcMonthlyKm(annualKm)`: `Math.round(annualKm / 12)`
   - [ ] `CreateVehicleDto`: class-validator 유효성 검사 데코레이터 적용
+    - `annual_km` `@Min(1)` (monthly_km 0 나눗셈 방어, #8), `current_km` `@Min(0)`
   - [ ] `UpdateVehicleDto`: PartialType(CreateVehicleDto)
 - [ ] `PresetModule` (또는 VehicleModule 내 엔드포인트)
   - `GET /presets?fuelCode=&transCode=` — MaintenanceIntervalPreset 조회 (AC-V6, V7)
@@ -93,7 +97,7 @@
   - Step 1 — 기본 정보: 차량 별칭(자유 입력), 차량 모델명, 차량번호, 제조사(드롭다운), 연식(드롭다운)
   - Step 2 — 제원 선택: 차종(VehicleTypeCode)·연료(FuelTypeCode)·변속기(TransmissionTypeCode) 드롭다운 (AC-V6)
     - 제원 확정 시 HEV·AT 조합 기준 프리셋 17항목 자동 제안 안내 표시
-  - Step 3 — 주행 정보: current_km, annual_km 입력; monthly_km(÷12) 자동 표시(AC-V9); 최초 등록일(date picker)
+  - Step 3 — 주행 정보: current_km, annual_km 입력(annual_km≥1, #8); monthly_km(÷12) 자동 표시(AC-V9); 주행거리 기준일(reference_date, date picker, 기본=오늘)
   - Step 4 — 프리셋 확인: 제원 요약 칩 + MaintenanceIntervalPreset 제안 목록 (AC-V7, V8)
     - ✓/✕ 상태 표시, 비해당 항목(타이밍벨트 HEV 등)은 비활성 처리
     - "완료 등록" → 확정 항목만 MaintenancePart 생성

@@ -3,7 +3,7 @@
 > 참고: [sdd/01_planning/01_feature/visualization_feature_spec.md](../../01_planning/01_feature/visualization_feature_spec.md)  
 > 참고: [sdd/01_planning/02_screen/screen_spec.md](../../01_planning/02_screen/screen_spec.md)  
 > 상태: 대기 (Phase 2 API 완료 후 착수)  
-> 마지막 업데이트: 2026-06-14
+> 마지막 업데이트: 2026-06-15
 
 ---
 
@@ -40,7 +40,7 @@
 | VZ2 | 연료·변속기 조합에 미적용 부품 목록 제외 |
 | VZ3 | 모바일: 티켓 카드 목록 단일 뷰 (간트·탭 없음) |
 | VZ4 | 티켓 카드 정보: 부품명+태그+상태 / 주기→다음교환일·예상km / 최근교환 날짜·km |
-| VZ5 | 상태별 좌측 4px 바 + 배경 tint: urgent=rose / soon=amber / ok=green / chain=cyan |
+| VZ5 | 상태별 카드 테두리(stroke) + 부품명 텍스트 색: urgent=rose / soon=amber / ok=green / chain=cyan (배경 tint 미사용) |
 | VZ6 | chain 카드: "교체 불필요·모니터링" 텍스트, 날짜 행 생략 |
 | VZ7 | 모바일 뷰에서 알림 카드 섹션 미표시 |
 | VZ8 | 태블릿+: 간트 차트 / 목록 보기 탭 전환 |
@@ -77,14 +77,14 @@
   - brake → "제동 & 타이어" (#f87171)
   - cooling+hybrid → "냉각 & 하이브리드" (#fbbf24)
 - [ ] **부품 필터 유틸리티** (`lib/utils/part-filter.ts`)
-  - `filterPartsByVehicle(parts, fuelCode)` → 미적용 부품 제외 (VZ2)
+  - `filterPartsByVehicle(parts, fuelCode)` → `applicable_fuel_codes`(master, 단일 진실원 #11)에 fuelCode 미포함 시 제외 (VZ2)
 - [ ] **상태 색상 토큰** (`lib/constants/status-colors.ts`)
-  - urgent: `#f87171` / soon: `#fbbf24` / ok: `#22c55e` / chain: `#38bdf8`
+  - urgent: `#f87171` / soon: `#fbbf24` / ok: `#22c55e` / chain: `#38bdf8` / unknown: `#6b7a99`(muted, 계산 불가)
 
 #### 모바일 — TicketCard
 
 - [ ] `components/TicketCard.tsx`
-  - 좌측 4px 바 + 배경 8%/5% tint (VZ5)
+  - 카드 테두리(stroke) 상태색 + 부품명 텍스트 상태색 (배경은 `--bg2` 통일, tint 미사용) (VZ5)
   - 부품명 + `[NX4]` 태그 + 상태 아이콘·텍스트 우측 정렬 (VZ4)
   - 주기 → 다음 교환 예정일 · 예상 km (카테고리 색상)
   - 최근 교환 날짜·km (muted)
@@ -174,7 +174,7 @@
 | VZ2 | unit | filterPartsByVehicle(parts, 'ev') → engine_oil 미포함 |
 | VZ3 | e2e | Playwright: viewport 390×844 → GanttChart DOM 없음 확인 |
 | VZ4 | e2e | Playwright: TicketCard 정보 항목 전체 렌더링 확인 |
-| VZ5 | e2e | Playwright: urgent 카드 `border-left-color: #f87171` CSS 속성 확인 |
+| VZ5 | e2e | Playwright: urgent 카드 `border-color: #f87171` + 부품명 `color: #f87171` 확인, 배경 tint 미적용 확인 |
 | VZ6 | e2e | Playwright: chain 카드 날짜 행 DOM 미존재 확인 |
 | VZ7 | e2e | Playwright: viewport 390×844 → AlertCard 섹션 DOM 없음 확인 |
 | VZ8 | e2e | Playwright: viewport 768×1024 → 탭 전환 클릭 후 뷰 교체 확인 |

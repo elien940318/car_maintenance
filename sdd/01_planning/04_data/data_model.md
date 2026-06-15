@@ -10,6 +10,7 @@
 ```
 VehicleTypeCode ──< Vehicle >── FuelTypeCode
                       │          TransmissionTypeCode
+                      │          ManufacturerCode (nullable)
                       │
                   MaintenancePart ──< MaintenanceRecord
                       │
@@ -61,12 +62,26 @@ VehicleTypeCode ──< Vehicle >── FuelTypeCode
 
 코드 목록: `at` `mt` `dct_wet` `dct_dry` `cvt` `e_motor`
 
+### ManufacturerCode (제조사 코드)
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| code | string PK | 예: `hyundai` |
+| label_ko | string | 예: `현대` |
+| sort_order | int | |
+
+코드 목록: `hyundai` `kia` `genesis` `kg_mobility` `renault_korea` `chevrolet` `etc`(기타)
+
+> 국산 브랜드 위주 + `etc`(기타·직접 입력). 수입차는 `etc`로 처리. 계산에는 미사용(표시·분류용).
+
 ---
 
 ## 부품 마스터 (MaintenancePartMaster)
 
 > 차량 독립적 부품 정의. 연료 타입별 적용 가능 여부를 저장.
 > 시드 스크립트로 초기 적재.
+>
+> **부품 적용 여부의 단일 진실원(source of truth)**: `applicable_fuel_codes`(CSV)가 "이 부품이 해당 연료에 적용되는가"의 유일 기준이다. 화면 표시 필터(AC-VZ2)와 수동 추가 검증은 모두 이 값을 따른다. `MaintenanceIntervalPreset`의 존재 여부는 "차량 등록 시 기본 제안 여부"(AC-V7)만 결정하며 적용 여부와는 별개다. (#11 결정, 2026-06-15)
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
@@ -145,16 +160,18 @@ WHERE fuel_type_code = :vehicleFuel
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
 | id | uuid PK | ✓ | |
-| name | string | ✓ | 차량명 (자유 입력, 예: `내 투싼`) |
+| name | string | ✓ | 차량 별칭 (자유 입력, 예: `내 투싼`, `회사차`) |
+| model_name | string | - | 차량 모델명 (예: `투싼 NX4 하이브리드`) |
+| license_plate | string | - | 차량번호 (예: `123가 4567`) |
+| manufacturer_code | string FK | - | → ManufacturerCode |
 | model_year | int | - | 연식 |
-| engine_code | string | - | 엔진 코드 (예: `G1.6T`) |
 | vehicle_type_code | string FK | ✓ | → VehicleTypeCode |
 | fuel_type_code | string FK | ✓ | → FuelTypeCode |
 | transmission_code | string FK | ✓ | → TransmissionTypeCode |
 | current_km | int | ✓ | 현재 주행거리 (km) |
 | annual_km | int | ✓ | 연간 주행거리 (km/년) |
 | monthly_km | int | ✓ | 월 평균 주행거리 (내부 계산값). `annual_km / 12` (소수점 이하 반올림). 사용자에게 직접 입력 받지 않으며 `annual_km` 변경 시 자동 재계산. |
-| reference_date | date | ✓ | current_km 측정 기준일 |
+| reference_date | date | ✓ | **주행거리 기준일** — current_km를 측정한 날. 모든 km↔날짜 환산의 기준점(ScheduleCalculator의 기준일 보정·이력 폴백에 사용). 차량 최초 등록일과는 무관. |
 | notes | string | - | 메모 |
 | created_at | datetime | ✓ | |
 | updated_at | datetime | ✓ | |
@@ -191,10 +208,16 @@ WHERE fuel_type_code = :vehicleFuel
 | part_id | uuid FK | ✓ | → MaintenancePart |
 | record_km | int | - | 교환 시 주행거리 (lkm) |
 | record_date | date | - | 교환 날짜 (ldt) |
+| is_estimated_km | bool | ✓ | record_km이 누락 축 보간으로 채워진 값인지 (default false) |
+| is_estimated_date | bool | ✓ | record_date가 누락 축 보간으로 채워진 값인지 (default false) |
 | memo | string | - | 메모 |
 | created_at | datetime | ✓ | |
 
 제약: `record_km` 또는 `record_date` 중 하나 이상 필수.
+
+> **저장 시 누락 축 보간**: 둘 중 하나만 입력되면 서비스 레이어에서 vehicle 보정값으로 나머지를 계산해 채우고 `is_estimated_*=true`로 표시한다. (pkm/pmo 어느 주기 유형이든 계산 가능하도록 정규화)
+> - `record_date` 누락 → `reference_date + (current_km - record_km)/monthly_km × 30`
+> - `record_km` 누락 → `current_km - (reference_date - record_date)/30 × monthly_km`
 
 ---
 
@@ -204,11 +227,12 @@ DB에 저장하지 않고 런타임에 계산:
 
 | 필드 | 계산 방식 |
 |------|---------|
-| last_record | 해당 `MaintenancePart`의 `MaintenanceRecord` 중 `record_date DESC`, `created_at DESC` 기준 최신 1건 |
-| next_km | last_record.record_km + part.interval_km |
-| next_date | last_record.record_date + part.interval_months (pmo) 또는 km 환산 |
+| last_record | 해당 `MaintenancePart`의 `MaintenanceRecord` 중 `record_date DESC`, `created_at DESC` 기준 최신 1건. **없으면 등록 시점(reference_date·current_km)을 가상 기준점으로 폴백** |
+| baseline | 'recorded'(실제 이력) / 'estimated'(폴백 추정) |
+| next_km | last_km + part.interval_km (pkm) 또는 km 환산 (pmo) |
+| next_date | last_date + part.interval_months (pmo) 또는 km 환산 (pkm) |
 | days_remaining | next_date − today |
-| status | urgent(<90) / soon(<180) / ok(180+) / chain |
+| status | urgent(<90) / soon(<180) / ok(180+) / chain(교환 불필요) / unknown(monthly_km<1 등 계산 불가) |
 
 ---
 

@@ -20,8 +20,9 @@
 **AC-VZ1** The system shall 정비 항목을 카테고리 섹션으로 그룹화하여 표시한다:
 엔진·점화·구동계 / 필터 & 공기 / 변속기 / 제동 & 타이어 / 냉각 & 하이브리드
 
-**AC-VZ2** The system shall 차량의 연료·변속기 조합에 적용되지 않는 부품은 목록에서 제외한다.
+**AC-VZ2** The system shall 차량의 연료에 적용되지 않는 부품은 목록에서 제외한다.
 (예: EV → 엔진오일 표시 안 함, 가솔린 → 글로우플러그 표시 안 함)
+- 적용 여부 기준은 `MaintenancePartMaster.applicable_fuel_codes` (단일 진실원, #11)
 
 ---
 
@@ -35,14 +36,14 @@ the system shall 간트 차트와 탭 없이 **티켓 카드 목록**을 단일 
 - 교환 주기 → 다음 교환 예정일 · 예상 km (카테고리 색상)
 - 최근 교환 날짜 · km (muted, chain 항목은 생략)
 
-**AC-VZ5** The system shall 티켓 카드의 긴급도를 아래 색상 규칙으로 표현한다:
+**AC-VZ5** The system shall 티켓 카드의 긴급도를 **카드 테두리(stroke)와 부품명 텍스트 색**으로 표현한다. 배경 tint는 사용하지 않으며, 카드 배경은 `--bg2` 중립색으로 통일한다.
 
-| 상태 | 좌측 4px 바 색상 | 카드 배경 tint |
-|------|----------------|--------------|
-| urgent (< 90일 또는 초과) | `#f87171` (rose) | rose 8% |
-| soon (90~179일) | `#fbbf24` (amber) | amber 8% |
-| ok (≥ 180일) | `#22c55e` (green) | green 5% |
-| chain (교환 불필요) | `#38bdf8` (cyan) | cyan 5% |
+| 상태 | 카드 테두리(stroke) | 부품명 텍스트 |
+|------|-------------------|-------------|
+| urgent (< 90일 또는 초과) | `#f87171` (rose) | rose |
+| soon (90~179일) | `#fbbf24` (amber) | amber |
+| ok (≥ 180일) | `#22c55e` (green) | text(기본) |
+| chain (교환 불필요) | `#38bdf8` (cyan) | cyan |
 
 **AC-VZ6** When `isChain=true`인 항목일 때,
 the system shall 카드에 "교체 불필요 · 모니터링만 필요" 텍스트를 표시하고
@@ -130,7 +131,7 @@ the system shall 패널·바텀 시트를 닫는다.
 | AC-VZ2 | unit: 연료·변속기 조합별 부품 필터 정확성 |
 | AC-VZ3 | e2e: 모바일 티켓 카드 목록 단일 뷰 렌더링 (viewport 390×844) |
 | AC-VZ4 | e2e: 카드 정보 항목 렌더링 |
-| AC-VZ5 | e2e: 카드 상태별 좌측 바 색상·배경 tint 확인 |
+| AC-VZ5 | e2e: 카드 상태별 테두리(stroke) 색상·부품명 텍스트 색 확인 (배경 tint 미적용 확인) |
 | AC-VZ6 | e2e: chain 카드 날짜 행 미표시 |
 | AC-VZ7 | e2e: 모바일에서 알림 카드 섹션 미노출 |
 | AC-VZ8 | e2e: 태블릿 뷰 탭 전환 (viewport 768×1024) |

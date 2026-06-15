@@ -106,7 +106,7 @@ pnpm exec playwright test --ui
 | M4 | unit | `maintenance.service.spec.ts` | 🔴 |
 | M5 | unit | `schedule-calculator.spec.ts` | 🔴 |
 | M6 | unit | `schedule-calculator.spec.ts` | 🔴 |
-| M7 | unit + e2e | `maintenance.service.spec.ts`, `bulk-record.spec.ts` | 🟡 |
+| ~~M7~~ | — | **삭제됨 (#15, 2026-06-15)** | — |
 | M8 | unit | `schedule-calculator.spec.ts` | 🔴 |
 | M9 | unit | `schedule-calculator.spec.ts` | 🔴 |
 | M10 | unit | `alert-aggregator.spec.ts` | 🔴 |
@@ -163,6 +163,9 @@ pnpm exec playwright test --ui
 | 경계값 soon | days_remaining=91 | status='soon' |
 | 경계값 ok | days_remaining=181 | status='ok' |
 | XOR 위반 | interval_km=7500, interval_months=6 동시 | ValidationError |
+| 이력 0건 폴백 | last_km=null, last_date=null | baseline='estimated', 예정일 계산됨 |
+| 기준일 보정 | ref < today | current_km_today = current_km + 경과분 |
+| monthly_km 0 가드 | monthly_km=0 | status='unknown', next_date=null |
 
 ---
 

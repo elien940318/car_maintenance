@@ -836,16 +836,16 @@
     place(createText('(연간 ÷ 12, 교환 시기 계산에 사용)', 9, 400, COLORS.muted, 'DerivedNote'), derivedBox, 204, 11);
     y += 48;
 
-    // 최초 등록일
-    place(createText('최초 등록일', 11, 500, COLORS.muted, 'Label:등록일'), frame, 20, y);
+    // 주행거리 기준일 (current_km 측정일 = reference_date, 계산 기준점)
+    place(createText('주행거리 기준일', 11, 500, COLORS.muted, 'Label:기준일'), frame, 20, y);
     y += 18;
-    const dateInput = createFrame('Input:등록일', 335, 48, COLORS.bg2);
+    const dateInput = createFrame('Input:기준일', 335, 48, COLORS.bg2);
     dateInput.cornerRadius = 8;
     dateInput.strokes = solidFill(COLORS.border);
     dateInput.strokeWeight = 1;
     dateInput.strokeAlign = 'INSIDE';
     place(dateInput, frame, 20, y);
-    place(createText('2021 - 01 - 15', 14, 500, COLORS.text, 'DateVal'), dateInput, 14, 16);
+    place(createText('2026 - 06 - 15', 14, 500, COLORS.text, 'DateVal'), dateInput, 14, 16);
     place(createText('📅', 14, 400, COLORS.muted, 'CalIcon'), dateInput, 300, 16);
     y += 60;
 

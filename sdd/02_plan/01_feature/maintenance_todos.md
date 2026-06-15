@@ -13,8 +13,8 @@
 | DB (Prisma) | MaintenancePartMaster, MaintenanceIntervalPreset, MaintenancePart, MaintenanceRecord 모델 정의 |
 | 시드 | 부품 마스터 23개 + 프리셋 ~90개 적재 |
 | 도메인 (Nest.js) | ScheduleCalculator (순수 함수), 상태 분류, AlertAggregator |
-| API (Nest.js) | MaintenanceModule (CRUD + 교환완료 + 일괄 기록) |
-| UI (Next.js) | 교환완료 인라인 입력, 일괄 교환 기록 UI, isVehicleSpecific 경고 태그 |
+| API (Nest.js) | MaintenanceModule (CRUD + 교환완료 단건) |
+| UI (Next.js) | 교환완료 인라인 입력(부품별 단건), isVehicleSpecific 경고 태그 |
 
 ---
 
@@ -37,7 +37,7 @@
 | M4 | 교환 기록 등록 시 즉시 재계산 트리거 |
 | M5 | pkm 계산: next_km=lkm+pkm, next_date=today+(next_km-cur_km)/monthly_km×30 |
 | M6 | pmo 계산: next_date=ldt+pmo개월, next_km=cur_km+months_diff×monthly_km |
-| M7 | 일괄 교환 기록: 선택 항목 전체 ldt·lkm 한 번에 업데이트 |
+| ~~M7~~ | ~~일괄 교환 기록~~ — **삭제됨 (#15, 2026-06-15). 부품별 단건만** |
 | M8 | 상태 분류: urgent(<90일) / soon(90~179일) / ok(180일+) |
 | M9 | 예정일 초과(과거) → urgent, 초과 일수 표시 |
 | M10 | urgent·soon 항목 예정일 오름차순 알림 집계 |
@@ -77,12 +77,16 @@
 #### ScheduleCalculator (순수 도메인 함수)
 
 - [ ] `src/schedule/schedule-calculator.ts` 작성
+  - [ ] `adjustCurrentKm(currentKm, referenceDate, today, monthlyKm)` → 기준일 보정 `current_km_today` (today=ref면 보정 0)
+  - [ ] `resolveBaseline(lastKm, lastDate, vehicle)` → 이력 null 시 폴백 기준점(`{lastKm, lastDate, baseline:'estimated'}`), 존재 시 `'recorded'`
   - [ ] `calcPkmNextKm(lkm, pkm)` → `next_km = lkm + pkm`
-  - [ ] `calcPkmNextDate(nextKm, curKm, monthlyKm)` → `next_date = today + (nextKm - curKm) / monthlyKm × 30`
+  - [ ] `calcPkmNextDate(nextKm, curKmToday, monthlyKm)` → `next_date = today + (nextKm - curKmToday) / monthlyKm × 30`
   - [ ] `calcPmoNextDate(ldt, pmo)` → `next_date = ldt + pmo개월` (date-fns addMonths)
-  - [ ] `calcPmoNextKm(curKm, monthlyKm, nextDate)` → `next_km = curKm + monthsDiff(today, nextDate) × monthlyKm`
-  - [ ] `classifyStatus(daysRemaining, isChain)` → `'urgent' | 'soon' | 'ok' | 'chain'`
-  - [ ] `computePartSchedule(part, lastRecord, vehicle)` → `{ nextKm, nextDate, daysRemaining, status }`
+  - [ ] `calcPmoNextKm(curKmToday, monthlyKm, nextDate)` → `next_km = curKmToday + monthsDiff(today, nextDate) × monthlyKm`
+  - [ ] `classifyStatus(daysRemaining, isChain, monthlyKm)` → `'urgent' | 'soon' | 'ok' | 'chain' | 'unknown'`
+    - is_chain → 'chain' / monthlyKm<1 → 'unknown' / 그 외 일수 분류
+  - [ ] `computePartSchedule(part, lastRecord, vehicle)` → `{ nextKm, nextDate, daysRemaining, status, baseline }`
+    - 처리 순서: chain → unknown 가드 → 기준일 보정 → 이력 폴백 → pkm/pmo 분기 → 상태 분류
 - [ ] ScheduleCalculator 단위 테스트 작성 (Jest)
   - test_strategy.md의 8개 핵심 케이스 커버 (`pkm 정상`, `pmo 정상`, `isChain`, `초과`, `경계값 45/91/181일`)
 
@@ -99,17 +103,15 @@
   - `POST /vehicles/:vehicleId/parts` — 정비 항목 수동 등록
   - `PATCH /vehicles/:vehicleId/parts/:partId` — 주기·팁 수정
   - `POST /vehicles/:vehicleId/parts/:partId/records` — 교환완료 단건 (AC-M12, M13)
-  - `POST /vehicles/:vehicleId/parts/bulk-records` — 일괄 교환 기록 (AC-M7)
 - [ ] `MaintenanceService`
   - `findByVehicle()`: 각 항목에 ScheduleCalculator 적용한 read model 반환
-  - `createRecord()`: MaintenanceRecord 저장 → 해당 Part 상태 재계산 반환
-  - `bulkCreateRecords()`: 선택 partId 배열 + record 일괄 처리 (AC-M7)
+  - `createRecord()`: 누락 축 보간(`interpolateRecord()`) → MaintenanceRecord 저장 → 해당 Part 상태 재계산 반환
+  - `interpolateRecord()`: record_km/record_date 중 하나만 입력 시 vehicle 보정값으로 나머지 계산, `is_estimated_*=true` 표시 (#7)
   - `validateXOR()`: interval_km과 interval_months 동시 입력 시 BadRequestException (AC-M3)
   - `validateRecord()`: record_km, record_date 둘 다 없으면 BadRequestException
 - [ ] DTO 작성
   - `CreateMaintenancePartDto`: pkm/pmo XOR 검증 (class-validator `@ValidateIf`)
   - `RecordCompletionDto`: record_km, record_date (둘 다 optional이나 하나 필수)
-  - `BulkRecordDto`: partIds 배열 + 공통 record 값
 
 ### Phase 3 — Next.js UI
 
@@ -120,9 +122,6 @@
   - 주행거리 NumberInput (기본값: 차량 current_km)
   - 메모 TextInput (선택)
   - 저장 버튼 → `POST /records` → 상태 즉시 갱신 (TanStack Query invalidate)
-- [ ] **일괄 교환 기록 UI** (AC-M7)
-  - 체크박스로 복수 항목 선택 → "선택 항목 교환완료" 버튼
-  - 공통 날짜·km 입력 → bulkCreateRecords 호출
 
 ---
 
@@ -130,8 +129,10 @@
 
 - 아직 미착수.
 - ScheduleCalculator는 외부 의존성 없는 순수 함수 — 단위 테스트를 코드보다 먼저 작성(TDD).
-- `computePartSchedule()`의 `today` 기준일은 `new Date()`가 아니라 Vehicle.reference_date 기준 고려 필요 (기준일 논의 필요).
-- 일괄 교환 기록(AC-M7) UI는 간트/목록 뷰 체크박스 선택과 연동 예정 → VZ 구현 후 통합.
+- **[확정 2026-06-15] 기준일 정책**: `today = new Date()`(실제 오늘)와 `reference_date`(주행거리 기준일)를 분리. current_km는 reference_date 시점 값이므로 `current_km_today`로 보정 후 계산. (#5)
+- **[확정 2026-06-15] 이력 0건**: 교환 이력 없으면 등록 시점(reference_date·current_km)을 가상 최초 교환점으로 폴백, `baseline='estimated'` 표기. (#6)
+- **[확정 2026-06-15] 계산 불가**: monthly_km<1이면 status='unknown'. DTO에서 annual_km≥1 1차 차단 + 계산 레이어 2차 가드. (#8)
+- **[확정 2026-06-15] 일괄 교환(AC-M7) 삭제**: 교환은 부품별 단건 기록만. bulk 엔드포인트·DTO·UI·SCR-04 모두 제외. (#15)
 
 ---
 
@@ -145,7 +146,7 @@
 | M4 | unit | createRecord() 호출 후 반환 status 변경 확인 |
 | M5 | unit | pkm: lkm=89485, pkm=7500, cur=89660, mon=750 → next_km=96985 |
 | M6 | unit | pmo: ldt=2026-06-07, pmo=6 → next_date=2026-12-07 |
-| M7 | unit + e2e | bulkCreateRecords() DB 레코드 수 확인 + Playwright UI 흐름 |
+| ~~M7~~ | — | **삭제됨 (#15)** |
 | M8 | unit | 경계값 테스트: days=89→urgent, 90→soon, 179→soon, 180→ok |
 | M9 | unit | days=-1 → urgent, daysRemaining < 0 |
 | M10 | unit | aggregateAlerts() 결과 예정일 오름차순 정렬 확인 |
