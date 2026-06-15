@@ -36,7 +36,7 @@
 
 | AC | 내용 요약 |
 |----|---------|
-| VZ1 | 카테고리 섹션 그룹화: 엔진·점화·구동계 / 필터&공기 / 변속기 / 제동&타이어 / 냉각&하이브리드 |
+| VZ1 | 카테고리 섹션 그룹화: 엔진·점화·구동계 / 필터&공기 / 변속기 / 제동&타이어 / 냉각&하이브리드 / 현가&섀시 |
 | VZ2 | 연료·변속기 조합에 미적용 부품 목록 제외 |
 | VZ3 | 모바일: 티켓 카드 목록 단일 뷰 (간트·탭 없음) |
 | VZ4 | 티켓 카드 정보: 부품명+태그+상태 / 주기→다음교환일·예상km / 최근교환 날짜·km |
@@ -76,6 +76,7 @@
   - trans → "변속기" (#a78bfa)
   - brake → "제동 & 타이어" (#f87171)
   - cooling+hybrid → "냉각 & 하이브리드" (#fbbf24)
+  - suspension → "현가 & 섀시" (#7c93c0)
 - [ ] **부품 필터 유틸리티** (`lib/utils/part-filter.ts`)
   - `filterPartsByVehicle(parts, fuelCode)` → `applicable_fuel_codes`(master, 단일 진실원 #11)에 fuelCode 미포함 시 제외 (VZ2)
 - [ ] **상태 색상 토큰** (`lib/constants/status-colors.ts`)
@@ -170,7 +171,7 @@
 
 | AC | 레이어 | 검증 방법 |
 |----|--------|---------|
-| VZ1 | e2e | Playwright: 카테고리 섹션 헤더 5개 렌더링 확인 |
+| VZ1 | e2e | Playwright: 카테고리 섹션 헤더 6개 렌더링 확인 |
 | VZ2 | unit | filterPartsByVehicle(parts, 'ev') → engine_oil 미포함 |
 | VZ3 | e2e | Playwright: viewport 390×844 → GanttChart DOM 없음 확인 |
 | VZ4 | e2e | Playwright: TicketCard 정보 항목 전체 렌더링 확인 |

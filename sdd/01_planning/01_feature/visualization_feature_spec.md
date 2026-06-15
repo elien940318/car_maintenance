@@ -18,7 +18,7 @@
 ### 공통
 
 **AC-VZ1** The system shall 정비 항목을 카테고리 섹션으로 그룹화하여 표시한다:
-엔진·점화·구동계 / 필터 & 공기 / 변속기 / 제동 & 타이어 / 냉각 & 하이브리드
+엔진·점화·구동계 / 필터 & 공기 / 변속기 / 제동 & 타이어 / 냉각 & 하이브리드 / 현가 & 섀시
 
 **AC-VZ2** The system shall 차량의 연료에 적용되지 않는 부품은 목록에서 제외한다.
 (예: EV → 엔진오일 표시 안 함, 가솔린 → 글로우플러그 표시 안 함)
@@ -44,6 +44,7 @@ the system shall 간트 차트와 탭 없이 **티켓 카드 목록**을 단일 
 | soon (90~179일) | `#fbbf24` (amber) | amber |
 | ok (≥ 180일) | `#22c55e` (green) | text(기본) |
 | chain (교환 불필요) | `#38bdf8` (cyan) | cyan |
+| unknown (계산 불가) | `#6b7a99` (muted) | muted |
 
 **AC-VZ6** When `isChain=true`인 항목일 때,
 the system shall 카드에 "교체 불필요 · 모니터링만 필요" 텍스트를 표시하고
@@ -87,7 +88,7 @@ the system shall 교환 바 대신 "교체 불필요" 패턴 배너를 표시한
 **AC-VZ17** The system shall 목록 뷰에서 각 항목에 대해 아래 컬럼을 표시한다:
 항목명 / 주기 / 최근 교환 / 다음 교환 예정일 / 예상 km / 상태
 
-**AC-VZ18** The system shall 상태(urgent/soon/ok/chain)를 색상 배지로 표시한다.
+**AC-VZ18** The system shall 상태(urgent/soon/ok/chain/unknown)를 색상 배지로 표시한다.
 
 ---
 

@@ -71,13 +71,14 @@
 | engine_oil | 엔진오일 | engine | gasoline,diesel,lpg,hev,phev | 10 |
 | oil_filter | 오일필터 | engine | gasoline,diesel,lpg,hev,phev | 20 |
 | spark_plug | 스파크플러그 | engine | gasoline,lpg,hev,phev | 30 |
+| ignition_coil | 점화코일 | engine | gasoline,lpg,hev,phev | 35 |
 | glow_plug | 글로우플러그 | engine | diesel | 40 |
 | serpentine_belt | 구동벨트(보조벨트) | engine | gasoline,diesel,lpg,hev,phev | 50 |
 | timing_chain | 타이밍체인 | chain | gasoline,hev,phev | 60 |
 | timing_belt | 타이밍벨트 | chain | gasoline,diesel | 70 |
 | air_filter | 에어클리너 | filter | gasoline,diesel,lpg,hev,phev | 80 |
 | cabin_filter | 에어컨필터 | filter | gasoline,diesel,lpg,hev,phev,ev | 90 |
-| fuel_filter | 연료필터(디젤) | filter | diesel | 100 |
+| fuel_filter | 연료필터 | filter | diesel,lpg | 100 |
 | dpf | DPF(매연여과장치) | filter | diesel | 110 |
 | trans_fluid | 변속기오일 | trans | gasoline,diesel,lpg,hev,phev | 120 |
 | reducer_oil | 감속기오일 | trans | ev | 130 |
@@ -91,6 +92,7 @@
 | inverter_coolant | 인버터 냉각수 | hybrid | hev,phev,ev | 210 |
 | battery_12v | 12V 보조배터리 | hybrid | gasoline,diesel,lpg,hev,phev,ev | 220 |
 | hv_battery_check | 고전압배터리 점검 | hybrid | hev,phev,ev | 230 |
+| rubber_bushing | 고무부싱(현가) | suspension | gasoline,diesel,lpg,hev,phev,ev | 240 |
 
 ---
 
@@ -132,6 +134,15 @@
 | lpg | NULL | 30000 | NULL | LPG 연소 특성상 더 빈번한 교환 |
 | hev | NULL | 60000 | NULL | 이리듐 기준 |
 | phev | NULL | 60000 | NULL | 이리듐 기준 |
+
+### 5-3-1. 점화코일 (ignition_coil)
+
+| fuel | trans | interval_km | interval_months | note |
+|------|-------|------------|----------------|------|
+| gasoline | NULL | 100000 | NULL | 실화·부조 발생 시 조기 교환. 코일온플러그 개별 교환 |
+| lpg | NULL | 80000 | NULL | LPG 고온 연소로 열화 빠름 |
+| hev | NULL | 100000 | NULL | |
+| phev | NULL | 100000 | NULL | |
 
 ### 5-4. 글로우플러그 (glow_plug)
 
@@ -190,6 +201,7 @@
 | fuel | trans | interval_km | interval_months | note |
 |------|-------|------------|----------------|------|
 | diesel | NULL | 30000 | NULL | 수분 분리기 겸용 시 주행감 저하 전 교환 |
+| lpg | NULL | 20000 | NULL | LPG 봄베 필터. 시동성 저하 전 교환 |
 
 ### 5-11. DPF (dpf) — is_chain=true (강제재생 모니터링)
 
@@ -327,6 +339,19 @@
 | phev | NULL | 15000 | NULL | |
 | ev | NULL | 15000 | NULL | BMS 진단 병행 |
 
+### 5-24. 고무부싱 (rubber_bushing) — 현가·섀시
+
+> 로어암·스태빌라이저·트레일링암 등 현가 부싱 통합 점검 항목.
+
+| fuel | trans | interval_km | interval_months | note |
+|------|-------|------------|----------------|------|
+| gasoline | NULL | 80000 | NULL | 소음·핸들링 유격·편마모 발생 시 교환 |
+| diesel | NULL | 80000 | NULL | |
+| lpg | NULL | 80000 | NULL | |
+| hev | NULL | 80000 | NULL | |
+| phev | NULL | 80000 | NULL | |
+| ev | NULL | 80000 | NULL | 중량 큰 EV는 부싱 부하 더 큼 |
+
 ---
 
 ## 집계 통계
@@ -337,5 +362,5 @@
 | 연료 코드 | 6 |
 | 변속기 코드 | 6 |
 | 제조사 코드 | 7 (국산 6 + 기타) |
-| 부품 마스터 | 23 |
-| 프리셋 레코드 | 106개 (전체 연료×변속기 조합, 5-1~5-23 표 합산) |
+| 부품 마스터 | 25 (점화코일·고무부싱 추가) |
+| 프리셋 레코드 | 117개 (전체 연료×변속기 조합, 5-1~5-24 표 합산) |

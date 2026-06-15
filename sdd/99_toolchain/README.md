@@ -47,6 +47,6 @@ Figma Desktop → Plugins → Development → Import plugin from manifest...
 
 | 파일 | 목적 |
 |------|------|
-| `apps/api/prisma/seed.ts` | 코드 마스터 + 프리셋 약 106개 시드 (TS/Prisma 확정 스택, 구 `seed_parts.py` 대체) |
+| `apps/api/prisma/seed.ts` | 코드 마스터 + 프리셋 약 117개 시드 (TS/Prisma 확정 스택, 구 `seed_parts.py` 대체) |
 | `01_automation/run_ui_parity` | UI parity 검증 자동화 (AC-VZ14, Playwright 스냅샷) |
 | `02_policies/` | 컨벤션 및 실행 정책 문서 |

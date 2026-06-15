@@ -148,4 +148,4 @@ OD-1 결정으로 인해 다음 OD를 연쇄 결정한다:
 | OD-2 (멀티 차량) | **MVP: 단일 차량** | 학습 범위 최소화. Vehicle 엔티티는 다중 차량 대응 구조 유지 (id FK 설계). |
 | OD-3 (인증) | **MVP: 인증 없음** | 토이 프로젝트 특성. 향후 NextAuth.js + JWT 추가 가능 구조로 설계. |
 | OD-4 (SVG 관리) | **Next.js `public/` 정적 파일** | svg_key 필드로 참조. 파일명 규칙: `part-{category}-{slug}.svg` |
-| OD-5 (부품 프리셋) | **Prisma seed 제공** | `prisma/seed.ts`에 전체 연료×변속기 조합 프리셋 약 106개 시드(투싼 NX4 HEV 17개 포함). (#10, 2026-06-15) |
+| OD-5 (부품 프리셋) | **Prisma seed 제공** | `prisma/seed.ts`에 전체 연료×변속기 조합 프리셋 약 117개 시드(투싼 NX4 HEV 17개 포함). (#10, 2026-06-15) |

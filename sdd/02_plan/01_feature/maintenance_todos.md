@@ -11,7 +11,7 @@
 | 레이어 | 대상 |
 |--------|------|
 | DB (Prisma) | MaintenancePartMaster, MaintenanceIntervalPreset, MaintenancePart, MaintenanceRecord 모델 정의 |
-| 시드 | 부품 마스터 23개 + 프리셋 약 106개 적재 |
+| 시드 | 부품 마스터 25개 + 프리셋 약 117개 적재 |
 | 도메인 (Nest.js) | ScheduleCalculator (순수 함수), 상태 분류, AlertAggregator |
 | API (Nest.js) | MaintenanceModule (CRUD + 교환완료 단건) |
 | UI (Next.js) | 교환완료 인라인 입력(부품별 단건), isVehicleSpecific 경고 태그 |
@@ -68,8 +68,8 @@
   - part_id FK, record_km(nullable), record_date(nullable)
   - 제약: record_km 또는 record_date 중 하나 이상 필수 (서비스 레이어 검증)
 - [ ] 마이그레이션 실행: `npx prisma migrate dev --name add-maintenance`
-- [ ] `seed.ts`: MaintenancePartMaster 23개 부품 적재 (`code_and_presets.md` 기준)
-- [ ] `seed.ts`: MaintenanceIntervalPreset 약 106개 프리셋 적재 (연료×변속기 조합별)
+- [ ] `seed.ts`: MaintenancePartMaster 25개 부품 적재 (`code_and_presets.md` 기준)
+- [ ] `seed.ts`: MaintenanceIntervalPreset 약 117개 프리셋 적재 (연료×변속기 조합별)
   - NX4 HEV (hev + at / e_motor) 프리셋 우선 포함
 
 ### Phase 2 — Nest.js 도메인 & API

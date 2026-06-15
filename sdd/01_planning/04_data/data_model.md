@@ -87,27 +87,28 @@ VehicleTypeCode ──< Vehicle >── FuelTypeCode
 |------|------|------|------|
 | part_key | string PK | ✓ | 고유 식별자 (예: `engine_oil`) |
 | name_ko | string | ✓ | 부품명 (예: `엔진오일`) |
-| category | string | ✓ | engine/chain/filter/trans/brake/cooling/hybrid |
+| category | string | ✓ | engine/chain/filter/trans/brake/cooling/hybrid/suspension |
 | applicable_fuel_codes | string | ✓ | 적용 가능 연료 코드 (쉼표 구분, 예: `gasoline,diesel,lpg,hev,phev`) |
 | role_description | text | - | 부품 역할 설명 (HTML) |
 | tip_template | text | - | 정비 팁 기본 템플릿 |
 | svg_key | string | - | SVG 일러스트 식별자 |
 | sort_order | int | ✓ | 섹션 내 정렬 순서 |
 
-부품 목록 (23개):
+부품 목록 (25개):
 
 | part_key | name_ko | category | 적용 연료 |
 |----------|---------|----------|---------|
 | engine_oil | 엔진오일 | engine | gasoline,diesel,lpg,hev,phev |
 | oil_filter | 오일필터 | engine | gasoline,diesel,lpg,hev,phev |
 | spark_plug | 스파크플러그 | engine | gasoline,lpg,hev,phev |
+| ignition_coil | 점화코일 | engine | gasoline,lpg,hev,phev |
 | glow_plug | 글로우플러그 | engine | diesel |
 | serpentine_belt | 구동벨트 | engine | gasoline,diesel,lpg,hev,phev |
 | timing_chain | 타이밍체인 | chain | gasoline,hev,phev |
 | timing_belt | 타이밍벨트 | chain | gasoline,diesel |
 | air_filter | 에어클리너 | filter | gasoline,diesel,lpg,hev,phev |
 | cabin_filter | 에어컨필터 | filter | gasoline,diesel,lpg,hev,phev,ev |
-| fuel_filter | 연료필터 | filter | diesel |
+| fuel_filter | 연료필터 | filter | diesel,lpg |
 | dpf | DPF(매연여과장치) | filter | diesel |
 | trans_fluid | 변속기오일 | trans | gasoline,diesel,lpg,hev,phev |
 | reducer_oil | 감속기오일 | trans | ev |
@@ -121,6 +122,7 @@ VehicleTypeCode ──< Vehicle >── FuelTypeCode
 | inverter_coolant | 인버터 냉각수 | hybrid | hev,phev,ev |
 | battery_12v | 12V 보조배터리 | hybrid | gasoline,diesel,lpg,hev,phev,ev |
 | hv_battery_check | 고전압배터리 점검 | hybrid | hev,phev,ev |
+| rubber_bushing | 고무부싱(현가) | suspension | gasoline,diesel,lpg,hev,phev,ev |
 
 ---
 
@@ -187,7 +189,7 @@ WHERE fuel_type_code = :vehicleFuel
 | part_key | string FK | - | → MaintenancePartMaster (수동 추가 시 null 가능) |
 | name | string | ✓ | 부품명 (프리셋에서 복사 또는 직접 입력) |
 | sub_name | string | - | 영문/설명 |
-| category | string | ✓ | engine/chain/filter/trans/brake/cooling/hybrid |
+| category | string | ✓ | engine/chain/filter/trans/brake/cooling/hybrid/suspension |
 | interval_km | int | - | 사용자 확정 주기 (pkm) |
 | interval_months | int | - | 사용자 확정 주기 (pmo) |
 | is_chain | bool | ✓ | 교환 불필요 여부 (default false) |
@@ -247,6 +249,7 @@ DB에 저장하지 않고 런타임에 계산:
 | brake | 제동 & 타이어 | #f87171 (rose) |
 | cooling | 냉각 & 하이브리드 | #fbbf24 (amber) |
 | hybrid | 냉각 & 하이브리드 | #38bdf8 (cyan) |
+| suspension | 현가 & 섀시 | #7c93c0 (slate) |
 
 ---
 

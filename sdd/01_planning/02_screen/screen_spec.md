@@ -353,6 +353,7 @@ Step 4 — 프리셋 확인
 | --purple | #a78bfa | 변속기 |
 | --orange | #fb923c | 필터 |
 | --green | #22c55e | ok 상태 |
+| --slate | #7c93c0 | 현가·섀시 (suspension) |
 
 ### 카테고리 색상 매핑
 
@@ -365,6 +366,7 @@ Step 4 — 프리셋 확인
 | brake | --rose |
 | cooling | --amber |
 | hybrid | --cyan |
+| suspension | --slate |
 
 ### 상태 색상 매핑 (티켓 카드 / 배지 공통)
 
