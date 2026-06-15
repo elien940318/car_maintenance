@@ -1,0 +1,7 @@
+{
+  "name": "carmaint screens",
+  "id": "carmaint-screens-generator",
+  "api": "1.0.0",
+  "main": "carmaint_screens.js",
+  "editorType": ["figma"]
+}
