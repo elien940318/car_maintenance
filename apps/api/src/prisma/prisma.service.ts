@@ -2,7 +2,7 @@
 // PrismaClient를 @Injectable()로 감싸서 NestJS DI 컨테이너에 등록한다.
 // 다른 Service에서 constructor(private prisma: PrismaService)로 주입받아 사용.
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {

@@ -9,7 +9,7 @@ metadata:
 
 ## 현재 단계
 
-**03_build Phase 2 완료 → Phase 3(Next.js UI) 착수 대기** (2026-06-21 기준)
+**03_build Phase 3 완료 → 04_verify(E2E 검증) 착수 대기** (2026-06-21 기준)
 
 전체 현황 문서: `sdd/PROJECT_STATUS.md`
 
@@ -116,14 +116,23 @@ metadata:
 - AlertAggregator: urgent/soon 항목 nextDate 오름차순
 - MaintenanceModule: CRUD + createRecord(누락 축 보간)
 
-## 다음 세션 작업: Phase 3 — Next.js UI
+## Phase 3 완료 (2026-06-21)
 
-화면 명세: `sdd/01_planning/02_screen/screen_spec.md`
-- SCR-01: 메인 대시보드 (간트 차트 + 티켓 카드, 640px 반응형 분기)
-- SCR-02: 부품 상세 패널 / 바텀 시트 + 교환완료 인라인 입력
-- SCR-03: 차량 등록·수정 4단계 폼 (React Hook Form + useFormContext)
-- 빈 상태 화면 (차량 미등록 → EmptyState → SCR-03)
+커밋: `feat(phase-3): Next.js UI 구현 완료` (36 files changed, 2509 insertions)
 
-상세: `sdd/02_plan/01_feature/vehicle_todos.md`, `maintenance_todos.md` Phase 3 섹션
+- 디자인 토큰: CSS 변수 14종 + Tailwind `cm-*` 색상 확장
+- lib/types.ts, lib/api.ts, lib/codes.ts, store/panelStore.ts
+- SCR-01: Dashboard.tsx + GanttChart(SVG 42개월) + PartTable + AlertCards + TicketCardList + TicketCard
+- SCR-02: PartDetailPanel(태블릿+) + PartDetailSheet(모바일) + RecordCompletionForm
+- SCR-03: VehicleForm(4단계) + Step1Basic·Step2Spec·Step3Mileage·Step4Preset + StepIndicator
+- EmptyState, Header, Providers, layout.tsx, page.tsx
+- Next.js build: TypeScript 오류 0개 / 정적 페이지 7개
+
+## 다음 세션 작업: Phase 4 — 04_verify E2E 검증
+
+- Playwright E2E 테스트 작성 및 실행 (AC-V1~V10, AC-M1~M16[M7 제외], AC-VZ1~VZ23)
+- DEV 환경: API(port 3001) + Next.js(port 3000) 동시 기동
+- `apps/web/.env.local`: `NEXT_PUBLIC_API_URL=http://localhost:3001`
+- `apps/api/.env`: `PORT=3001`
 
 [[user-background]]

@@ -4,7 +4,6 @@
 // Prisma 5: 어댑터 불필요, DATABASE_URL 환경변수에서 SQLite 경로를 읽음
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
