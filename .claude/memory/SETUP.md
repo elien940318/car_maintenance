@@ -96,6 +96,7 @@ cp "$HOME/.claude/projects/$slug/memory/"*.md .claude/memory/
 | `project_state.md` | 프로젝트 단계·확정 결정·다음 작업 |
 | `feedback_ui_design.md` | UI 디자인 피드백(상태색 표현 방식 등) |
 | `project_env.md` | 로컬 git 설정 등 환경 정보 |
+| `feedback_checklist_preservation.md` | 체크리스트 완료 처리 시 원문 보존 규칙 |
 
 > ⚠️ `SETUP.md`(이 파일)는 가이드 문서이므로 실제 메모리 경로로 복사하지 않는다.
 > 복사 명령에서 항상 제외한다.
