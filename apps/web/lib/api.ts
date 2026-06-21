@@ -18,17 +18,31 @@ interface ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const err = new Error(body.message ?? `HTTP ${res.status}`) as ApiError;
-    err.status = res.status;
-    throw err;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000); // 8초 타임아웃
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      ...options,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const err = new Error(body.message ?? `HTTP ${res.status}`) as ApiError;
+      err.status = res.status;
+      throw err;
+    }
+    return res.json() as Promise<T>;
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') {
+      const err = new Error(`API 서버에 연결할 수 없습니다 (${BASE})`) as ApiError;
+      err.status = 0;
+      throw err;
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
   }
-  return res.json() as Promise<T>;
 }
 
 export const api = {
