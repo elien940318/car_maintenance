@@ -122,7 +122,74 @@ apps/api/src/
 
 ---
 
-## 다음 단계: Phase 3 — Next.js UI
+## Phase 3 완료 사항
 
-상세 계획: `sdd/02_plan/01_feature/vehicle_todos.md`, `maintenance_todos.md` Phase 3  
-화면 명세: `sdd/01_planning/02_screen/screen_spec.md`
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| 디자인 토큰 | globals.css CSS 변수 (--bg·--mint·--rose 등 14종) + Tailwind `cm-*` 색상 확장 | ✅ |
+| 의존성 | @tanstack/react-query 5 / zustand 5 / react-hook-form 7 | ✅ |
+| lib/types.ts | 프론트엔드 API 응답 타입 (Vehicle, PartWithSchedule, PresetItem 등) | ✅ |
+| lib/api.ts | fetch 기반 API 클라이언트 (vehicle·presets·parts 엔드포인트) | ✅ |
+| lib/codes.ts | 정적 코드 테이블 (차종·연료·변속기·제조사·카테고리 색상·상태 색상) | ✅ |
+| store/panelStore.ts | Zustand 전역 패널 상태 (선택 부품, 열림/닫힘) | ✅ |
+| components/providers.tsx | QueryClientProvider 래퍼 (retry: 404 제외) | ✅ |
+| app/layout.tsx | 메타데이터 + Providers 주입 | ✅ |
+| app/page.tsx | 차량 조회 → 빈 상태 또는 Dashboard 분기 (AC-V10) | ✅ |
+| EmptyState.tsx | 차량 미등록 안내 화면 + 등록하기 버튼 (AC-V10) | ✅ |
+| Header.tsx | 차량명·연식·연료 태그 + current_km·monthly_km·reference_date (AC-V4) | ✅ |
+| SCR-03 차량 폼 | StepIndicator + VehicleForm + Step1~4 (React Hook Form useFormContext) | ✅ |
+| vehicle/new/page.tsx | 신규 등록 (기존 차량 있으면 /vehicle/edit 리다이렉트, AC-V5) | ✅ |
+| vehicle/edit/page.tsx | 차량 수정 (기존 데이터 pre-populate) | ✅ |
+| TicketCard.tsx | 상태별 테두리+텍스트 색 (AC-VZ4·VZ5), D-day, 최근 교환 | ✅ |
+| TicketCardList.tsx | 카테고리 섹션 그룹화 모바일 목록 (AC-VZ1·VZ3) | ✅ |
+| AlertCards.tsx | urgent/soon 알림 카드, nextDate 오름차순 (AC-VZ9·VZ10) | ✅ |
+| GanttChart.tsx | 36개월 SVG 간트 차트, TODAY 라인·자동 스크롤·완료/다음/미래 바 (AC-VZ11~VZ16) | ✅ |
+| PartTable.tsx | 목록 테이블 6컬럼 + 상태 배지 (AC-VZ17·VZ18) | ✅ |
+| Dashboard.tsx | 640px 반응형 분기 (모바일/태블릿+ 탭), TanStack Query 데이터 패칭 | ✅ |
+| PartDetailContent.tsx | 부품 역할·교환 정보 2×2 그리드·정비 팁 (AC-VZ19) | ✅ |
+| PartDetailPanel.tsx | 태블릿+ 우측 슬라이드인 사이드 패널 (AC-VZ21·VZ23) | ✅ |
+| PartDetailSheet.tsx | 모바일 바텀 시트 75vh (AC-VZ20·VZ23) | ✅ |
+| RecordCompletionForm.tsx | 교환완료 인라인 입력 (날짜/km/메모 기본값, POST→invalidate, AC-M12·M13·VZ22) | ✅ |
+| Next.js build | TypeScript 컴파일 오류 0개 / 정적 페이지 7개 생성 | ✅ |
+
+### 파일 구조 (Phase 3 이후)
+
+```text
+apps/web/
+├── app/
+│   ├── globals.css           # 디자인 토큰 CSS 변수
+│   ├── layout.tsx            # Providers + 메타데이터
+│   ├── page.tsx              # 빈 상태 / Dashboard 분기
+│   └── vehicle/
+│       ├── new/page.tsx      # SCR-03 신규 등록
+│       └── edit/page.tsx     # SCR-03 수정
+├── components/
+│   ├── providers.tsx         # QueryClientProvider
+│   ├── EmptyState.tsx
+│   ├── Header.tsx
+│   ├── dashboard/
+│   │   ├── Dashboard.tsx     # 640px 반응형 분기 오케스트레이터
+│   │   ├── TicketCard.tsx
+│   │   ├── TicketCardList.tsx
+│   │   ├── AlertCards.tsx
+│   │   ├── GanttChart.tsx    # SVG 36개월 타임라인
+│   │   └── PartTable.tsx
+│   ├── panel/
+│   │   ├── PartDetailContent.tsx
+│   │   ├── PartDetailPanel.tsx   # 태블릿+ 사이드 패널
+│   │   ├── PartDetailSheet.tsx   # 모바일 바텀 시트
+│   │   └── RecordCompletionForm.tsx
+│   └── vehicle/
+│       ├── VehicleForm.tsx   # 4단계 폼 래퍼
+│       ├── StepIndicator.tsx
+│       ├── Step1Basic.tsx
+│       ├── Step2Spec.tsx
+│       ├── Step3Mileage.tsx
+│       └── Step4Preset.tsx
+├── lib/
+│   ├── types.ts
+│   ├── api.ts
+│   └── codes.ts
+└── store/
+    └── panelStore.ts
+```

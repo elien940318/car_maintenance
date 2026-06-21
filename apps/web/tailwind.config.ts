@@ -9,8 +9,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        cm: {
+          bg: "#0b0f19",
+          bg2: "#131929",
+          bg3: "#1a2235",
+          border: "#242f45",
+          text: "#dde4f0",
+          muted: "#6b7a99",
+          mint: "#00e5a0",
+          cyan: "#38bdf8",
+          amber: "#fbbf24",
+          rose: "#f87171",
+          purple: "#a78bfa",
+          orange: "#fb923c",
+          green: "#22c55e",
+          slate: "#7c93c0",
+        },
+      },
+      fontFamily: {
+        mono: ["'Geist Mono'", "monospace"],
       },
     },
   },

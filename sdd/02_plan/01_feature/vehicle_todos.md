@@ -87,13 +87,13 @@
 
 ### Phase 3 — Next.js UI
 
-- [ ] **빈 상태 화면** (AC-V10)
+- [x] **빈 상태 화면** (AC-V10)
   - `app/page.tsx`: 차량 API 조회 결과 없으면 EmptyState 컴포넌트 렌더링
   - "차량 등록하기" 버튼 → `/vehicle/new`
   - 등록 완료 후 `/` (SCR-01)로 `router.push()`
-- [ ] **헤더 차량 정보 표시** (AC-V4)
+- [x] **헤더 차량 정보 표시** (AC-V4)
   - `components/Header.tsx`: 차량명·current_km·monthly_km·reference_date 표시
-- [ ] **SCR-03 — 4단계 차량 등록·수정 폼** (`app/vehicle/new/page.tsx`, `app/vehicle/edit/page.tsx`)
+- [x] **SCR-03 — 4단계 차량 등록·수정 폼** (`app/vehicle/new/page.tsx`, `app/vehicle/edit/page.tsx`)
   - Step 1 — 기본 정보: 차량 별칭(자유 입력), 차량 모델명, 차량번호, 제조사(드롭다운), 연식(드롭다운)
   - Step 2 — 제원 선택: 차종(VehicleTypeCode)·연료(FuelTypeCode)·변속기(TransmissionTypeCode) 드롭다운 (AC-V6)
     - 제원 확정 시 HEV·AT 조합 기준 프리셋 17항목 자동 제안 안내 표시

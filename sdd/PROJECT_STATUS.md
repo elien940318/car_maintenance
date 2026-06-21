@@ -1,7 +1,7 @@
 # carmaint — 프로젝트 현황 (Project Status)
 
 > 마지막 업데이트: 2026-06-21  
-> 현재 단계: **03_build Phase 2 완료 → Phase 3(Next.js UI) 착수 대기**
+> 현재 단계: **03_build Phase 3 완료 → 04_verify(E2E 검증) 착수 대기**
 
 ---
 
@@ -12,7 +12,7 @@
 | 00_sources (원본 요구사항) | ✅ 완료 | 투싼 NX4 HEV 프로토타입 기반 분석 |
 | 01_planning (명세 작성) | ✅ **완료** | 기능·화면·아키텍처·데이터·테스트 명세 |
 | 02_plan (실행 계획) | ✅ **완료** | 기능별 구현 체크리스트 작성 완료 (2026-06-14) |
-| 03_build (구현) | 🔨 **진행 중** | Phase 0·1·2 완료(골격 + DB + Nest.js API) |
+| 03_build (구현) | ✅ **완료** | Phase 0·1·2·3 완료(골격 + DB + Nest.js API + Next.js UI) |
 | 04_verify (검증) | 🔲 미착수 | |
 
 ---
@@ -174,21 +174,27 @@ WHERE fuel_type_code = :vehicleFuel
 
 ---
 
-## 8. 다음 착수: Phase 3 — Next.js UI
+## 8. Phase 3 완료 (2026-06-21)
 
-Phase 0·1·2 완료. Phase 3에서 Next.js 화면을 구현한다.
+Phase 0·1·2·3 전체 구현 완료.
 
-```
-주요 작업 (vehicle_todos.md, maintenance_todos.md Phase 3 참고):
-- SCR-01: 메인 대시보드 (간트 차트 + 티켓 카드, 반응형 640px 분기)
-- SCR-02: 부품 상세 패널 / 바텀 시트 + 교환완료 인라인 입력
-- SCR-03: 차량 등록·수정 4단계 폼
-- 빈 상태 화면 (차량 미등록)
-```
+| 항목 | 내용 |
+|------|------|
+| Next.js 의존성 | @tanstack/react-query 5 / zustand 5 / react-hook-form 7 |
+| 디자인 시스템 | CSS 변수 14종 + Tailwind `cm-*` 색상 확장 |
+| SCR-01 메인 대시보드 | 640px 반응형: 모바일(티켓 카드) / 태블릿+(간트+테이블 탭+알림 카드) |
+| SCR-02 부품 상세 | 모바일 바텀 시트 / 태블릿+ 사이드 패널 + 교환완료 인라인 입력 |
+| SCR-03 차량 폼 | 4단계 폼 (React Hook Form useFormContext) + 프리셋 선택 |
+| Next.js build | TypeScript 컴파일 오류 0개 |
 
-→ `sdd/02_plan/01_feature/vehicle_todos.md` Phase 3 체크리스트 참고  
-→ `sdd/02_plan/01_feature/maintenance_todos.md` Phase 3 체크리스트 참고  
-→ `sdd/01_planning/02_screen/screen_spec.md` 화면 명세 참고
+## 9. 다음 착수: 04_verify — E2E 검증
+
+Playwright E2E 테스트 작성 및 실행으로 AC 전체 검증.
+
+- AC-V1~V10, AC-M1~M16(M7 제외), AC-VZ1~VZ23
+- DEV 환경: API(port 3001) + Next.js(port 3000) 동시 기동
+- `apps/web/.env.local`: `NEXT_PUBLIC_API_URL=http://localhost:3001`
+- `apps/api/.env`: `PORT=3001`
 
 ---
 

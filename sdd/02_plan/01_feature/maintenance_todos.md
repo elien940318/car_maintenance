@@ -116,9 +116,9 @@
 
 ### Phase 3 — Next.js UI
 
-- [ ] **isVehicleSpecific 경고 태그** (AC-M11)
+- [x] **isVehicleSpecific 경고 태그** (AC-M11)
   - 카드/패널에 `[NX4]` 등 태그 + 주의사항 텍스트 표시
-- [ ] **교환완료 인라인 입력** (AC-M12, M13) — 패널 내 하단 고정
+- [x] **교환완료 인라인 입력** (AC-M12, M13) — 패널 내 하단 고정
   - 날짜 DatePicker (기본값: 오늘)
   - 주행거리 NumberInput (기본값: 차량 current_km)
   - 메모 TextInput (선택)
