@@ -1,13 +1,13 @@
 export const VEHICLE_TYPES = [
   { code: 'micro', label_ko: '경차' },
-  { code: 'small', label_ko: '소형' },
-  { code: 'mid', label_ko: '중형' },
-  { code: 'large', label_ko: '대형' },
-  { code: 'mini_suv', label_ko: '소형 SUV' },
-  { code: 'mid_suv', label_ko: '중형 SUV' },
-  { code: 'large_suv', label_ko: '대형 SUV' },
-  { code: 'van', label_ko: '미니밴' },
-  { code: 'mpv', label_ko: '다목적' },
+  { code: 'compact', label_ko: '소형' },
+  { code: 'subcompact', label_ko: '준중형' },
+  { code: 'midsize', label_ko: '중형' },
+  { code: 'fullsize', label_ko: '대형' },
+  { code: 'suv_compact', label_ko: '소형 SUV' },
+  { code: 'suv_midsize', label_ko: '중형 SUV' },
+  { code: 'suv_fullsize', label_ko: '대형 SUV' },
+  { code: 'minivan', label_ko: '미니밴' },
   { code: 'pickup', label_ko: '픽업트럭' },
 ];
 
@@ -30,13 +30,13 @@ export const TRANSMISSION_TYPES = [
 ];
 
 export const MANUFACTURERS = [
-  { code: 'hyundai', label_ko: '현대(Hyundai)' },
-  { code: 'kia', label_ko: '기아(Kia)' },
-  { code: 'genesis', label_ko: '제네시스(Genesis)' },
-  { code: 'chevrolet', label_ko: '쉐보레(Chevrolet)' },
-  { code: 'ssangyong', label_ko: 'KGM(쌍용)' },
-  { code: 'renault', label_ko: '르노코리아' },
-  { code: 'other', label_ko: '기타' },
+  { code: 'hyundai', label_ko: '현대' },
+  { code: 'kia', label_ko: '기아' },
+  { code: 'genesis', label_ko: '제네시스' },
+  { code: 'kg_mobility', label_ko: 'KG모빌리티' },
+  { code: 'renault_korea', label_ko: '르노코리아' },
+  { code: 'chevrolet', label_ko: '쉐보레(한국GM)' },
+  { code: 'etc', label_ko: '기타' },
 ];
 
 export const CATEGORY_GROUPS = [
