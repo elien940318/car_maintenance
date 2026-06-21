@@ -1,8 +1,8 @@
 # 차량 등록·관리 — 실행 계획
 
 > 참고: [sdd/01_planning/01_feature/vehicle_feature_spec.md](../../01_planning/01_feature/vehicle_feature_spec.md)  
-> 상태: 대기 (Phase 0 완료 후 착수)  
-> 마지막 업데이트: 2026-06-15
+> 상태: ✅ 완료 (Phase 1·2·3 구현 완료, 2026-06-21)  
+> 마지막 업데이트: 2026-06-21
 
 ---
 

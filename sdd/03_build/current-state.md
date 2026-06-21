@@ -58,8 +58,7 @@ carmaint/
 │       │   ├── app.module.ts  # PrismaModule import 포함
 │       │   ├── app.controller.ts
 │       │   ├── app.service.ts
-│       │   └── main.ts        # dotenv/config 로드 + NestFactory
-│       ├── generated/prisma/  # Prisma 5 생성 클라이언트 (git 제외)
+│       │   └── main.ts        # dotenv/config 로드 + SQLite 절대경로 보정 + NestFactory + CORS(origin:true) + ValidationPipe
 │       ├── .env               # DATABASE_URL=file:./prisma/dev.db (git 제외)
 │       └── package.json       # prisma.seed: "tsx prisma/seed.ts"
 ├── pnpm-workspace.yaml

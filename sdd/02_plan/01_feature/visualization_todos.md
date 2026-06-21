@@ -2,8 +2,8 @@
 
 > 참고: [sdd/01_planning/01_feature/visualization_feature_spec.md](../../01_planning/01_feature/visualization_feature_spec.md)  
 > 참고: [sdd/01_planning/02_screen/screen_spec.md](../../01_planning/02_screen/screen_spec.md)  
-> 상태: 대기 (Phase 2 API 완료 후 착수)  
-> 마지막 업데이트: 2026-06-15
+> 상태: ✅ 완료 (Phase 3 구현 완료, 2026-06-21)  
+> 마지막 업데이트: 2026-06-21
 
 ---
 
@@ -37,7 +37,7 @@
 
 | AC | 내용 요약 |
 |----|---------|
-| VZ1 | 카테고리 섹션 그룹화: 엔진·점화·구동계 / 필터&공기 / 변속기 / 제동&타이어 / 냉각&하이브리드 / 현가&섀시 |
+| VZ1 | 모바일: 긴급도 순 단일 플랫 목록 (urgent→soon→ok→unknown→chain, 같은 상태 내 daysRemaining 오름차순) |
 | VZ2 | 연료·변속기 조합에 미적용 부품 목록 제외 |
 | VZ3 | 모바일: 티켓 카드 목록 단일 뷰 (간트·탭 없음) |
 | VZ4 | 티켓 카드 정보: 부품명+태그+상태 / 주기→다음교환일·예상km / 최근교환 날짜·km |
@@ -96,76 +96,79 @@
 
 #### 태블릿+ — AlertCard
 
-- [ ] `components/AlertCard.tsx`
-  - urgent·soon 항목 카드 (예정일 오름차순)
-  - 부품명, 상태 배지, 남은 일수 (또는 초과 일수) 표시
-  - 클릭 시 PartDetailPanel 오픈
+- [x] `components/dashboard/AlertCards.tsx`
+  - urgent·soon 항목 카드 (예정일 오름차순, AlertAggregator 결과 사용) (VZ9)
+  - 부품명, 상태 배지(rose/amber), 남은 일수 또는 초과 일수 표시
+  - urgent+soon 0개 시 섹션 미표시 (VZ10)
+  - 클릭 시 panelStore → PartDetailPanel 오픈 (VZ7: 모바일에서는 이 컴포넌트 미렌더링)
 
 #### 태블릿+ — GanttChart
 
-- [ ] `components/GanttChart.tsx`
-  - 3년 타임라인 (today 기준 -1년 ~ +2년, 월 단위 컬럼) (VZ11)
+- [x] `components/dashboard/GanttChart.tsx`
+  - SVG 기반 42개월 타임라인 (today 기준 약 -6개월 ~ +36개월) (VZ11)
   - 각 정비 항목별 행 렌더링
-    - 완료 바: last_record.date ~ today (opacity 0.3) (VZ12)
-    - 다음 교환 바: today ~ next_date (opacity 1.0)
-    - 미래 바: next_date ~ next_next_date (opacity 0.2)
+    - 완료 바: last_record.date ~ today (낮은 opacity) (VZ12)
+    - 다음 교환 바: today ~ next_date (VZ12)
+    - 미래 바: next_date ~ next_next_date (더 낮은 opacity) (VZ12)
   - TODAY 수직선 (VZ13)
-  - 초기 렌더 시 TODAY가 가시 영역 좌측 25% 위치로 `scrollLeft` 자동 설정 (VZ14)
-    - `useEffect`에서 `containerRef.current.scrollLeft = todayOffset - containerWidth * 0.25`
-    - 데이터 갱신 후에도 재적용
-  - chain 항목: 교환 바 대신 패턴 배너 (사선 stripe 배경) (VZ15)
-  - 다음 교환 예정월 핀 레이블 (다음 교환 바 위, 월/년 표시) (VZ16)
+  - 초기 렌더 시 `useEffect`에서 `scrollLeft` 자동 설정 → TODAY가 좌측 1/4 위치 (VZ14)
+  - chain 항목: 사선 stripe 패턴 배너 (VZ15)
+  - 다음 교환 예정월 핀 레이블 (VZ16)
+  - 카테고리 섹션 레이블(점선 구분선) 포함
 
 #### 태블릿+ — ListTable
 
-- [ ] `components/ListTable.tsx`
+- [x] `components/dashboard/PartTable.tsx`
   - 컬럼: 항목명 / 주기 / 최근 교환 / 다음 교환 예정일 / 예상 km / 상태 (VZ17)
   - 상태 색상 배지 (VZ18)
-  - 행 클릭 시 PartDetailPanel 오픈
+  - 행 클릭 시 panelStore → PartDetailPanel 오픈
 
 #### 메인 페이지 반응형 분기
 
-- [ ] `app/page.tsx` — 메인 대시보드 (SCR-01)
-  - `< 640px`: TicketCard 목록 단일 뷰, AlertCard 미표시 (VZ3, VZ7)
-  - `≥ 640px`: AlertCard 섹션 (조건부) + 탭 전환 (VZ8, VZ9, VZ10)
-    - Tab 1: GanttChart
-    - Tab 2: ListTable
-  - 탭 상태: Zustand store 또는 URL searchParam으로 관리
+- [x] `components/dashboard/Dashboard.tsx` + `app/page.tsx` — 메인 대시보드 (SCR-01)
+  - `< 640px`: TicketCardList 단일 뷰, AlertCards·탭·GanttChart 미렌더링 (VZ3, VZ7)
+  - `≥ 640px`: AlertCards 섹션 (조건부) + 간트/테이블 탭 전환 (VZ8, VZ9, VZ10)
+  - 탭 상태: `useState('gantt'|'table')` (Dashboard 로컬 상태)
+  - TanStack Query로 `/vehicles/:id/parts` 패칭 → parts + vehicle 주입
 
 #### PartDetailPanel (공통)
 
-- [ ] `components/PartDetailPanel/index.tsx`
-  - 내부에서 뷰포트 너비 감지: `< 640px` → BottomSheet, `≥ 640px` → SidePanel
-- [ ] `components/PartDetailPanel/BottomSheet.tsx` (VZ20)
-  - 하단 슬라이드업 애니메이션
-  - max-height: 75vh, 내부 스크롤 가능
-  - 상단 드래그 핸들 (시각적 표시 + 터치 스와이프 닫기)
+> 실제 구현은 Dashboard.tsx에서 640px 분기 후 각각 렌더링. 공통 wrapper 파일 없음.
+
+- [x] `components/panel/PartDetailSheet.tsx` — 모바일 바텀 시트 (VZ20)
+  - 하단 슬라이드업 (max-height: 75vh, 내부 스크롤)
+  - 상단 드래그 핸들 + 터치 스와이프 닫기
   - 오버레이 탭 닫기 (VZ23)
-- [ ] `components/PartDetailPanel/SidePanel.tsx` (VZ21)
-  - 우측 슬라이드-인: `transform: translateX(100%)` → `translateX(0)`, 0.28s `cubic-bezier(0.4,0,0.2,1)`
-  - 배경 오버레이 (backdrop-blur 2px)
+- [x] `components/panel/PartDetailPanel.tsx` — 태블릿+ 우측 사이드 패널 (VZ21)
+  - 우측 슬라이드-인: `translateX(100%)` → `translateX(0)`, 0.28s `cubic-bezier(0.4,0,0.2,1)`
+  - backdrop-blur 오버레이
   - ✕ 버튼 + 오버레이 클릭 닫기 (VZ23)
-- [ ] `components/PartDetailPanel/PanelContent.tsx` — 공통 콘텐츠 (VZ19)
-  - 부품명 · 서브태그 · D-day (또는 초과 일수)
+- [x] `components/panel/PartDetailContent.tsx` — 공통 콘텐츠 (VZ19)
+  - 부품명 · 서브태그 · D-day (초과 일수 포함)
   - 부품 구조 SVG 일러스트 (`public/part-{category}-{slug}.svg`)
   - 부품 역할 설명
-  - 교환 통계 (주기 / 다음 교환일 / 예상 km / 남은 날짜)
+  - 교환 통계 2×2 그리드 (주기 / 다음 교환일 / 예상 km / 남은 날짜)
   - 정비 팁
-  - **하단 고정 교환완료 입력 영역** (VZ22, AC-M12 연동)
-    - 교환 날짜 DatePicker (기본=오늘)
-    - 교환 km NumberInput (기본=차량 current_km)
-    - 메모 TextInput (선택)
-    - 저장 버튼 → `POST /records` → TanStack Query invalidate
+- [x] `components/panel/RecordCompletionForm.tsx` — 하단 고정 교환완료 입력 (VZ22, AC-M12)
+  - 교환 날짜 DatePicker (기본=오늘)
+  - 교환 km NumberInput (기본=차량 current_km)
+  - 메모 TextInput (선택)
+  - 저장 버튼 → `POST /records` → TanStack Query invalidate → 상태 즉시 갱신
 
 ---
 
 ## 현재 작업 메모 (Current Notes)
 
-- 아직 미착수.
-- GanttChart TODAY auto-scroll (VZ14): `scrollLeft` 계산이 핵심 — 월 컬럼 너비 × 월 인덱스 계산 후 `containerWidth × 0.25` 오프셋 차감.
-- 바텀 시트 스와이프 닫기: `touchstart` / `touchmove` / `touchend` 이벤트 기반 delta 계산 필요.
-- 간트 바 미래 교환 예정일(next_next_date) 계산은 `computePartSchedule()` 2회 적용 (2번째 실행 시 next_date를 ldt로 사용).
-- PartDetailPanel은 Zustand의 `selectedPartId` 전역 상태로 오픈/닫기 제어.
+**Phase 3 완료 (2026-06-21)** — 전체 VZ AC 구현 완료.
+
+- **실제 파일 경로**: 계획 시 예상한 `components/PartDetailPanel/` 구조 대신 `components/panel/` 하위에 별도 파일로 분리 구현.
+  - `PartDetailSheet.tsx` (모바일) + `PartDetailPanel.tsx` (태블릿+) + `PartDetailContent.tsx` (공통 콘텐츠) + `RecordCompletionForm.tsx`
+- **GanttChart**: 42개월 SVG 구현. `scrollLeft` auto-scroll은 `useEffect` + `containerRef`로 처리.
+- **바텀 시트**: 터치 스와이프 닫기 구현 완료.
+- **TicketCardList**: 카테고리 그룹화 → 긴급도 순 정렬로 변경 (2026-06-21 UI 개선).
+- **TicketCard**: 카드 레이아웃 재설계 — 교환 예정일 크게 + 주기 작게(우하단) + 기준일 행 삭제 (2026-06-21 UI 개선).
+- **Zustand panelStore**: `selectedPart`(PartWithSchedule) + `selectedVehicle` + `isOpen` 전역 상태로 패널 제어.
+- **잔여 미구현 (VZ2)**: `filterPartsByVehicle()` 유틸 — 연료 미적용 부품 프론트엔드 필터링. 현재 API 응답이 이미 해당 차량 연료 기준으로 프리셋 적용된 parts만 반환하므로 실질적 영향 낮음.
 
 ---
 
