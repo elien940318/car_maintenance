@@ -1,7 +1,7 @@
 # carmaint — 프로젝트 현황 (Project Status)
 
 > 마지막 업데이트: 2026-06-21  
-> 현재 단계: **03_build Phase 1 완료 → Phase 2(Nest.js API) 착수 대기**
+> 현재 단계: **03_build Phase 2 완료 → Phase 3(Next.js UI) 착수 대기**
 
 ---
 
@@ -12,7 +12,7 @@
 | 00_sources (원본 요구사항) | ✅ 완료 | 투싼 NX4 HEV 프로토타입 기반 분석 |
 | 01_planning (명세 작성) | ✅ **완료** | 기능·화면·아키텍처·데이터·테스트 명세 |
 | 02_plan (실행 계획) | ✅ **완료** | 기능별 구현 체크리스트 작성 완료 (2026-06-14) |
-| 03_build (구현) | 🔨 **진행 중** | Phase 0·1 완료(모노레포 골격 + DB 스키마·시드·PrismaModule) |
+| 03_build (구현) | 🔨 **진행 중** | Phase 0·1·2 완료(골격 + DB + Nest.js API) |
 | 04_verify (검증) | 🔲 미착수 | |
 
 ---
@@ -174,19 +174,21 @@ WHERE fuel_type_code = :vehicleFuel
 
 ---
 
-## 8. 다음 착수: Phase 2 — Nest.js API
+## 8. 다음 착수: Phase 3 — Next.js UI
 
-Phase 0·1 완료. Phase 2에서 Nest.js 도메인 API를 구현한다.
+Phase 0·1·2 완료. Phase 3에서 Next.js 화면을 구현한다.
 
 ```
-주요 작업:
-1. VehicleModule (VehicleController / VehicleService / DTO)
-2. MaintenanceModule (ScheduleCalculator / MaintenanceController / MaintenanceService / DTO)
-3. GET /presets?fuelCode=&transCode= — 프리셋 조회 API
+주요 작업 (vehicle_todos.md, maintenance_todos.md Phase 3 참고):
+- SCR-01: 메인 대시보드 (간트 차트 + 티켓 카드, 반응형 640px 분기)
+- SCR-02: 부품 상세 패널 / 바텀 시트 + 교환완료 인라인 입력
+- SCR-03: 차량 등록·수정 4단계 폼
+- 빈 상태 화면 (차량 미등록)
 ```
 
-→ `sdd/02_plan/01_feature/vehicle_todos.md` Phase 2 체크리스트 참고  
-→ `sdd/02_plan/01_feature/maintenance_todos.md` Phase 2 체크리스트 참고
+→ `sdd/02_plan/01_feature/vehicle_todos.md` Phase 3 체크리스트 참고  
+→ `sdd/02_plan/01_feature/maintenance_todos.md` Phase 3 체크리스트 참고  
+→ `sdd/01_planning/02_screen/screen_spec.md` 화면 명세 참고
 
 ---
 

@@ -82,6 +82,47 @@ carmaint/
 
 ---
 
-## 다음 단계: Phase 2 — Nest.js API
+## Phase 2 완료 사항
 
-상세 계획: `sdd/02_plan/01_feature/vehicle_todos.md`, `maintenance_todos.md`
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| VehicleModule | VehicleController / VehicleService / CreateVehicleDto / UpdateVehicleDto | ✅ |
+| PresetModule | GET /presets?fuelCode=&transCode= (AC-V6, V7, M15) | ✅ |
+| 전역 ValidationPipe | whitelist=true, transform=true | ✅ |
+| ScheduleCalculator | adjustCurrentKm·resolveBaseline·calcPkm*/calcPmo*·classifyStatus·computePartSchedule (순수 함수) | ✅ |
+| ScheduleCalculator 단위 테스트 | 22개 Jest PASS (AC-M2·M5·M6·M8·M9 포함) | ✅ |
+| AlertAggregator | urgent/soon 항목 nextDate 오름차순 (AC-M10) | ✅ |
+| MaintenanceModule | MaintenanceController / MaintenanceService / 3종 DTO | ✅ |
+| MaintenanceService | findByVehicle·createPart·updatePart·createRecord·interpolateRecord·validateXOR·validateRecord | ✅ |
+
+### 파일 구조 (Phase 2 이후)
+
+```text
+apps/api/src/
+├── prisma/            # PrismaModule (Global) + PrismaService
+├── vehicle/           # VehicleModule — GET/POST/PATCH /vehicle
+│   ├── dto/           # CreateVehicleDto, UpdateVehicleDto
+│   ├── vehicle.controller.ts
+│   ├── vehicle.service.ts
+│   └── vehicle.module.ts
+├── preset/            # PresetModule — GET /presets
+│   ├── preset.controller.ts
+│   ├── preset.service.ts
+│   └── preset.module.ts
+├── schedule/          # 순수 도메인 함수 (NestJS 외부)
+│   ├── schedule-calculator.ts      # ScheduleCalculator 8개 함수
+│   ├── schedule-calculator.spec.ts # Jest 단위 테스트 22개
+│   └── alert-aggregator.ts         # AlertAggregator
+└── maintenance/       # MaintenanceModule — GET/POST/PATCH /vehicles/:id/parts
+    ├── dto/           # CreateMaintenancePartDto, UpdateMaintenancePartDto, RecordCompletionDto
+    ├── maintenance.controller.ts
+    ├── maintenance.service.ts
+    └── maintenance.module.ts
+```
+
+---
+
+## 다음 단계: Phase 3 — Next.js UI
+
+상세 계획: `sdd/02_plan/01_feature/vehicle_todos.md`, `maintenance_todos.md` Phase 3  
+화면 명세: `sdd/01_planning/02_screen/screen_spec.md`
