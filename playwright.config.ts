@@ -9,6 +9,7 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     browserName: 'chromium',
+    screenshot: 'on',
   },
   projects: [
     {
