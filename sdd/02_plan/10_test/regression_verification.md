@@ -1,8 +1,8 @@
 # 회귀 검증 계획
 
 > 참고: [sdd/01_planning/10_test/test_strategy.md](../../01_planning/10_test/test_strategy.md)  
-> 상태: 대기 (Phase 2 완료 후 검증 파이프라인 구축)  
-> 마지막 업데이트: 2026-06-14
+> 상태: 진행 중 (Phase 3 완료, Playwright E2E 구축 중)  
+> 마지막 업데이트: 2026-06-21
 
 ---
 

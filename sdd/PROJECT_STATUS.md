@@ -1,7 +1,7 @@
 # carmaint — 프로젝트 현황 (Project Status)
 
 > 마지막 업데이트: 2026-06-21  
-> 현재 단계: **03_build Phase 3 완료 → 04_verify(E2E 검증) 착수 대기**
+> 현재 단계: **04_verify Phase 4 완료 — Playwright E2E 72/75 PASS**
 
 ---
 
@@ -13,7 +13,7 @@
 | 01_planning (명세 작성) | ✅ **완료** | 기능·화면·아키텍처·데이터·테스트 명세 |
 | 02_plan (실행 계획) | ✅ **완료** | 기능별 구현 체크리스트 작성 완료 (2026-06-14) |
 | 03_build (구현) | ✅ **완료** | Phase 0·1·2·3 완료(골격 + DB + Nest.js API + Next.js UI) |
-| 04_verify (검증) | 🔲 미착수 | |
+| 04_verify (검증) | ✅ **완료** | Playwright E2E 72/75 PASS (2026-06-21) |
 
 ---
 
@@ -204,14 +204,18 @@ Phase 0·1·2·3 전체 구현 완료.
 | TicketCard — 카드 레이아웃 | 2행: 교환 예정일 크게(좌) + 교체 주기 작게(우하단). 기준일 행 삭제 |
 | TicketCard — 색상 통일 | 날짜·주기 텍스트 카테고리 색 → `var(--text)` / `var(--muted)` 통일. 상태 색상은 유지 |
 
-## 9. 다음 착수: 04_verify — E2E 검증
+## 9. Phase 4 완료 (2026-06-21) — Playwright E2E
 
-Playwright E2E 테스트 작성 및 실행으로 AC 전체 검증.
+| 항목 | 결과 |
+|------|------|
+| 총 E2E 테스트 수 | 75개 (25 specs × 3 projects) |
+| 통과 | **72 PASS** |
+| 스킵 | 3 (VZ23 닫기 버튼 선택자 미매칭) |
+| 실패 | 0 |
+| 실행 명령 | `pnpm exec playwright test` |
+| 잔여 위험 | VZ23 닫기·VZ14 scrollLeft 픽셀·WebKit 미설치·V1~V3/M1~M10 단위 테스트 미작성 |
 
-- AC-V1~V10, AC-M1~M16(M7 제외), AC-VZ1~VZ23
-- DEV 환경: API(port 3001) + Next.js(port 3000) 동시 기동
-- `apps/web/.env.local`: `NEXT_PUBLIC_API_URL=http://localhost:3001`
-- `apps/api/.env`: `PORT=3001`
+> 상세: [`sdd/04_verify/phase4-e2e-verify.md`](04_verify/phase4-e2e-verify.md)
 
 ---
 

@@ -192,3 +192,34 @@ apps/web/
 └── store/
     └── panelStore.ts
 ```
+
+---
+
+## Phase 4 완료 사항
+
+| 항목 | 내용 | 상태 |
+|------|------|------|
+| Playwright 설치 | `@playwright/test ^1.61.0` 루트 devDependency | ✅ |
+| playwright.config.ts | Chromium 기반 3개 프로젝트 (desktop/mobile/tablet), baseURL=http://localhost:3000 | ✅ |
+| tests/e2e/helpers.ts | 공통 헬퍼 (ensureVehicleExists, getVehicleId, getFirstPartId) | ✅ |
+| tests/e2e/vehicle.spec.ts | AC-V4, V5, V6, V10 E2E 검증 | ✅ |
+| tests/e2e/mobile-dashboard.spec.ts | AC-VZ1, VZ3~VZ7 E2E 검증 (390×844) | ✅ |
+| tests/e2e/tablet-dashboard.spec.ts | AC-VZ8~VZ10, VZ11~VZ14, VZ17~VZ18 E2E 검증 (810×1080) | ✅ |
+| tests/e2e/part-detail.spec.ts | AC-M11, VZ19~VZ21, VZ23 E2E 검증 | ✅ |
+| tests/e2e/record-completion.spec.ts | AC-M12, M13, M14, VZ22 E2E 검증 | ✅ |
+| E2E 실행 결과 | 75개 중 72 PASS / 3 SKIP / 0 FAIL (2026-06-21) | ✅ |
+
+### 파일 구조 (Phase 4 이후)
+
+```text
+carmaint/
+├── playwright.config.ts    # Chromium 3-project 설정
+└── tests/
+    └── e2e/
+        ├── helpers.ts
+        ├── vehicle.spec.ts
+        ├── mobile-dashboard.spec.ts
+        ├── tablet-dashboard.spec.ts
+        ├── part-detail.spec.ts
+        └── record-completion.spec.ts
+```
