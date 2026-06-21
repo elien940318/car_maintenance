@@ -1,10 +1,9 @@
 'use client';
-import { CATEGORY_COLORS, STATUS_ICONS, STATUS_LABELS } from '../../lib/codes';
-import type { PartWithSchedule, Vehicle } from '../../lib/types';
+import { STATUS_ICONS, STATUS_LABELS } from '../../lib/codes';
+import type { PartWithSchedule } from '../../lib/types';
 
 interface TicketCardProps {
   part: PartWithSchedule;
-  vehicle: Vehicle;
   onClick: () => void;
 }
 
@@ -15,11 +14,6 @@ function formatDate(iso: string | null): string {
   });
 }
 
-function formatKm(km: number | null): string {
-  if (km === null) return '-';
-  return `${km.toLocaleString()} km`;
-}
-
 function intervalText(part: PartWithSchedule): string {
   if (part.is_chain) return '교환 불필요';
   if (part.interval_km) return `${part.interval_km.toLocaleString()} km마다`;
@@ -27,10 +21,9 @@ function intervalText(part: PartWithSchedule): string {
   return '-';
 }
 
-export function TicketCard({ part, vehicle, onClick }: TicketCardProps) {
-  const { schedule, lastRecord } = part;
+export function TicketCard({ part, onClick }: TicketCardProps) {
+  const { schedule } = part;
   const status = schedule.status;
-  const catColor = CATEGORY_COLORS[part.category] ?? '#6b7a99';
 
   const statusColors: Record<string, string> = {
     urgent: '#f87171',
@@ -42,13 +35,8 @@ export function TicketCard({ part, vehicle, onClick }: TicketCardProps) {
   const strokeColor = statusColors[status] ?? '#6b7a99';
   const nameColor = status === 'ok' ? 'var(--text)' : strokeColor;
 
-  // D-day 텍스트
   let ddayText = '';
-  if (status === 'chain') {
-    ddayText = '';
-  } else if (status === 'unknown') {
-    ddayText = '계산 불가';
-  } else if (schedule.daysRemaining !== null) {
+  if (status !== 'chain' && status !== 'unknown' && schedule.daysRemaining !== null) {
     if (schedule.daysRemaining < 0) {
       ddayText = `D+${Math.abs(schedule.daysRemaining)}`;
     } else if (schedule.daysRemaining === 0) {
@@ -68,8 +56,8 @@ export function TicketCard({ part, vehicle, onClick }: TicketCardProps) {
         marginBottom: '8px',
       }}
     >
-      {/* 1행: 부품명 + 태그 + D-day */}
-      <div className="flex items-center justify-between gap-2 mb-2">
+      {/* 1행: 부품명 + 태그 | D-day + 상태 */}
+      <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm" style={{ color: nameColor }}>
             {part.name}
@@ -91,50 +79,41 @@ export function TicketCard({ part, vehicle, onClick }: TicketCardProps) {
             </span>
           )}
         </div>
-        {ddayText && (
-          <span className="text-xs font-mono whitespace-nowrap" style={{ color: strokeColor }}>
-            {ddayText}
-            {STATUS_ICONS[status] && ` ${STATUS_ICONS[status]}`}
-            {' '}
-            {STATUS_LABELS[status]}
-          </span>
-        )}
-        {status === 'chain' && (
-          <span className="text-xs" style={{ color: '#38bdf8' }}>교체 불필요</span>
-        )}
-      </div>
-
-      {/* 2행: 주기 → 예정일 */}
-      {status !== 'chain' && (
-        <div className="text-xs mb-1" style={{ color: catColor }}>
-          {intervalText(part)}
-          {schedule.nextDate && (
-            <span style={{ color: 'var(--muted)' }}>
-              {' → '}
-              <span style={{ color: catColor }}>{formatDate(schedule.nextDate)}</span>
-              {schedule.nextKm && (
-                <span style={{ color: 'var(--muted)' }}> · {formatKm(schedule.nextKm)}</span>
-              )}
+        <div className="flex items-center gap-1 shrink-0">
+          {ddayText && (
+            <span className="text-xs font-mono" style={{ color: strokeColor }}>
+              {ddayText}
             </span>
           )}
-          {status === 'unknown' && (
-            <span style={{ color: 'var(--muted)' }}> → 계산 불가</span>
+          {STATUS_ICONS[status] && (
+            <span className="text-[11px]">{STATUS_ICONS[status]}</span>
+          )}
+          {status !== 'chain' && (
+            <span className="text-xs font-medium" style={{ color: strokeColor }}>
+              {STATUS_LABELS[status]}
+            </span>
+          )}
+          {status === 'chain' && (
+            <span className="text-xs" style={{ color: '#38bdf8' }}>교체 불필요</span>
           )}
         </div>
-      )}
+      </div>
 
-      {/* 3행: 최근 교환 */}
-      {status !== 'chain' && lastRecord && (lastRecord.record_date || lastRecord.record_km) && (
-        <div className="text-xs" style={{ color: 'var(--muted)' }}>
-          최근: {formatDate(lastRecord.record_date)}
-          {lastRecord.record_km && ` · ${formatKm(lastRecord.record_km)}`}
+      {/* 2행: 교체 예정일(크게, 좌) + 교체 주기(작게, 우하단) */}
+      {status === 'unknown' ? (
+        <div className="text-base font-semibold" style={{ color: 'var(--muted)' }}>
+          계산 불가
         </div>
-      )}
-      {status !== 'chain' && !lastRecord && schedule.baseline === 'estimated' && (
-        <div className="text-xs" style={{ color: 'var(--muted)' }}>
-          기준: {formatDate(vehicle.reference_date)} · {formatKm(vehicle.current_km)} (추정)
+      ) : status !== 'chain' ? (
+        <div className="flex items-end justify-between">
+          <div className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+            {schedule.nextDate ? formatDate(schedule.nextDate) : '-'}
+          </div>
+          <div className="text-[11px]" style={{ color: 'var(--muted)' }}>
+            {intervalText(part)}
+          </div>
         </div>
-      )}
+      ) : null}
     </button>
   );
 }

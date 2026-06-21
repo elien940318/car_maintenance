@@ -140,8 +140,8 @@ apps/api/src/
 | SCR-03 차량 폼 | StepIndicator + VehicleForm + Step1~4 (React Hook Form useFormContext) | ✅ |
 | vehicle/new/page.tsx | 신규 등록 (기존 차량 있으면 /vehicle/edit 리다이렉트, AC-V5) | ✅ |
 | vehicle/edit/page.tsx | 차량 수정 (기존 데이터 pre-populate) | ✅ |
-| TicketCard.tsx | 상태별 테두리+텍스트 색 (AC-VZ4·VZ5), D-day, 최근 교환 | ✅ |
-| TicketCardList.tsx | 카테고리 섹션 그룹화 모바일 목록 (AC-VZ1·VZ3) | ✅ |
+| TicketCard.tsx | 상태별 테두리+텍스트 색 (AC-VZ5), 1행(부품명·D-day·상태), 2행(큰 교환예정일·작은 주기), 카테고리 색 미사용 (AC-VZ4) | ✅ |
+| TicketCardList.tsx | 긴급도 순 정렬 단일 플랫 목록 — urgent→soon→ok→unknown→chain, 같은 상태 내 daysRemaining 오름차순 (AC-VZ1·VZ3) | ✅ |
 | AlertCards.tsx | urgent/soon 알림 카드, nextDate 오름차순 (AC-VZ9·VZ10) | ✅ |
 | GanttChart.tsx | 36개월 SVG 간트 차트, TODAY 라인·자동 스크롤·완료/다음/미래 바 (AC-VZ11~VZ16) | ✅ |
 | PartTable.tsx | 목록 테이블 6컬럼 + 상태 배지 (AC-VZ17·VZ18) | ✅ |

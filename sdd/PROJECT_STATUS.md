@@ -110,6 +110,14 @@
 | chain — | cyan | 교환 불필요 |
 | unknown ⚪ | muted | 계산 불가 (monthly_km<1 등) |
 
+### 모바일 티켓 카드 목록 정렬 (2026-06-21 확정)
+
+- **카테고리 그룹화 없음** → 긴급도 순 단일 플랫 목록
+- 정렬: urgent → soon → ok → unknown → chain
+- 같은 상태 내: daysRemaining 오름차순 (초과 일수 많은 항목 상단)
+- 카드 2행: 날짜 크게(좌) + 주기 작게(우하단). 기준일 행 없음.
+- 날짜·주기 텍스트: 카테고리 색 미사용, `var(--text)` / `var(--muted)` 통일
+
 ### 주요 화면
 
 | ID | 화면명 |
@@ -186,6 +194,15 @@ Phase 0·1·2·3 전체 구현 완료.
 | SCR-02 부품 상세 | 모바일 바텀 시트 / 태블릿+ 사이드 패널 + 교환완료 인라인 입력 |
 | SCR-03 차량 폼 | 4단계 폼 (React Hook Form useFormContext) + 프리셋 선택 |
 | Next.js build | TypeScript 컴파일 오류 0개 |
+
+### Phase 3 UI 개선 (2026-06-21)
+
+| 항목 | 변경 내용 |
+|------|---------|
+| TicketCardList — 정렬 | 카테고리 그룹화 제거 → 긴급도 순 단일 플랫 목록 (urgent→soon→ok→unknown→chain) |
+| TicketCardList — 정렬 기준 | 같은 상태 내 daysRemaining 오름차순 (초과 일수 많은 항목 최상단) |
+| TicketCard — 카드 레이아웃 | 2행: 교환 예정일 크게(좌) + 교체 주기 작게(우하단). 기준일 행 삭제 |
+| TicketCard — 색상 통일 | 날짜·주기 텍스트 카테고리 색 → `var(--text)` / `var(--muted)` 통일. 상태 색상은 유지 |
 
 ## 9. 다음 착수: 04_verify — E2E 검증
 
