@@ -46,11 +46,18 @@ npx prisma init --datasource-provider sqlite
 `apps/api/prisma/schema.prisma`에 엔티티를 정의한다.  
 ([data_model.md](../../01_planning/04_data/data_model.md) 기준)
 
-- [ ] Vehicle 모델
-- [ ] MaintenancePart 모델 (interval_km XOR interval_months 제약)
-- [ ] MaintenanceRecord 모델
-- [ ] 초기 마이그레이션 실행: `npx prisma migrate dev --name init`
-- [ ] seed.ts 작성: 코드 마스터 전체 + 프리셋 약 117개(전체 연료×변속기 조합, NX4 HEV 포함) (#10)
+- [x] 코드 테이블 4종 모델 (VehicleTypeCode, FuelTypeCode, TransmissionTypeCode, ManufacturerCode)
+- [x] MaintenancePartMaster 모델
+- [x] MaintenanceIntervalPreset 모델 (unique constraint, nullable transmission)
+- [x] Vehicle 모델 (reference_date, monthly_km)
+- [x] MaintenancePart 모델 (interval_km XOR interval_months 제약)
+- [x] MaintenanceRecord 모델 (is_estimated_km/date)
+- [x] seed.ts 작성: 코드 마스터 전체 + 프리셋 117개(전체 연료×변속기 조합) (#10)
+- [x] tsx devDependency 추가 + prisma.seed 스크립트 설정
+- [x] PrismaModule / PrismaService (Nest.js DI)
+- [x] AppModule에 PrismaModule 등록
+- [x] 초기 마이그레이션 실행: `prisma migrate dev --name init`
+- [x] 시드 실행: `prisma db seed`
 
 ---
 

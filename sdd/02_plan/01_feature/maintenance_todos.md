@@ -54,23 +54,23 @@
 
 ### Phase 1 — Prisma 스키마 & 시드 (정비 관련 모델)
 
-- [ ] `schema.prisma`: MaintenancePartMaster 모델 정의
+- [x] `schema.prisma`: MaintenancePartMaster 모델 정의
   - part_key PK, name_ko, category, applicable_fuel_codes, role_description, tip_template, svg_key, sort_order
-- [ ] `schema.prisma`: MaintenanceIntervalPreset 모델 정의
-  - id UUID PK, part_key FK, fuel_type_code FK, transmission_code FK(nullable)
-  - interval_km, interval_months (XOR — Prisma 제약 주석으로 명시, 앱 레이어에서 검증)
+- [x] `schema.prisma`: MaintenanceIntervalPreset 모델 정의
+  - id cuid PK, part_key FK, fuel_type_code FK, transmission_code FK(nullable)
+  - interval_km, interval_months (XOR — 앱 레이어에서 검증)
   - is_chain bool, note
   - 유니크 제약: `(part_key, fuel_type_code, transmission_code)`
-- [ ] `schema.prisma`: MaintenancePart 모델 정의
+- [x] `schema.prisma`: MaintenancePart 모델 정의
   - vehicle_id FK, part_key FK(nullable), name, sub_name, category
   - interval_km, interval_months (XOR), is_chain, is_vehicle_specific, tip, svg_key, sort_order
-- [ ] `schema.prisma`: MaintenanceRecord 모델 정의
+- [x] `schema.prisma`: MaintenanceRecord 모델 정의
   - part_id FK, record_km(nullable), record_date(nullable)
   - 제약: record_km 또는 record_date 중 하나 이상 필수 (서비스 레이어 검증)
-- [ ] 마이그레이션 실행: `npx prisma migrate dev --name add-maintenance`
-- [ ] `seed.ts`: MaintenancePartMaster 25개 부품 적재 (`code_and_presets.md` 기준)
-- [ ] `seed.ts`: MaintenanceIntervalPreset 약 117개 프리셋 적재 (연료×변속기 조합별)
-  - NX4 HEV (hev + at / e_motor) 프리셋 우선 포함
+- [x] 마이그레이션 실행: `20260621103133_init` 완료 (차량·정비 모델 통합)
+- [x] `seed.ts`: MaintenancePartMaster 25개 부품 적재 (`code_and_presets.md` 기준)
+- [x] `seed.ts`: MaintenanceIntervalPreset 117개 프리셋 적재 (연료×변속기 조합별)
+  - NX4 HEV (hev + at / e_motor) 프리셋 포함
 
 ### Phase 2 — Nest.js 도메인 & API
 
@@ -127,7 +127,7 @@
 
 ## 현재 작업 메모 (Current Notes)
 
-- 아직 미착수.
+- **Phase 1 완료 (2026-06-21)**: schema.prisma 9개 엔티티 정의, 마이그레이션, seed.ts 적재(부품 25개+프리셋 117개), PrismaModule 등록.
 - ScheduleCalculator는 외부 의존성 없는 순수 함수 — 단위 테스트를 코드보다 먼저 작성(TDD).
 - **[확정 2026-06-15] 기준일 정책**: `today = new Date()`(실제 오늘)와 `reference_date`(주행거리 기준일)를 분리. current_km는 reference_date 시점 값이므로 `current_km_today`로 보정 후 계산. (#5)
 - **[확정 2026-06-15] 이력 0건**: 교환 이력 없으면 등록 시점(reference_date·current_km)을 가상 최초 교환점으로 폴백, `baseline='estimated'` 표기. (#6)

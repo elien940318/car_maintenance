@@ -9,7 +9,7 @@ metadata:
 
 ## 현재 단계
 
-**01_planning 완료 → 02_plan 완료 → 03_build(Phase 0) 착수 대기** (2026-06-15 기준)
+**03_build Phase 0 완료 → Phase 1(DB 스키마) 착수 대기** (2026-06-15 기준)
 
 전체 현황 문서: `sdd/PROJECT_STATUS.md`
 
@@ -83,15 +83,24 @@ metadata:
 
 ---
 
-## 다음 세션 작업: Phase 0 — 프로젝트 골격 생성
+## Phase 0 완료 (2026-06-15)
 
-02_plan 기능별 실행 계획 작성 완료 (vehicle/maintenance/visualization_todos.md + tech_stack_decision.md + regression_verification.md).
+- pnpm workspace 모노레포 구성 완료
+- Next.js 14 (App Router + Tailwind): `apps/web/` — 빌드 통과
+- Nest.js 10 (strict TS): `apps/api/` — 빌드 통과
+- Prisma 7 SQLite 초기화: `apps/api/prisma/schema.prisma`
+- Node.js v24.16.0 portable: `C:\Users\Metanet\tools\nodejs` (PATH 등록)
+- pnpm 11.7.0 (corepack)
 
-다음 착수:
-1. 모노레포 초기화: `create-next-app apps/web` + `@nestjs/cli new apps/api`
-2. Prisma 초기화: `prisma init --datasource-provider sqlite`
-3. pnpm workspace 설정 (`pnpm-workspace.yaml`)
+## 다음 세션 작업: Phase 1 — DB 스키마 & 시드 데이터
 
-상세 체크리스트: `sdd/02_plan/03_architecture/tech_stack_decision.md` Phase 0
+1. `schema.prisma`에 9개 엔티티 모델 정의
+2. `seed.ts` 작성 (코드 마스터 7종 + 프리셋 ~117개)
+3. `prisma migrate dev --name init` 실행
+4. Nest.js PrismaModule / PrismaService 구성
+
+상세: `sdd/02_plan/03_architecture/tech_stack_decision.md` Phase 1  
+데이터 명세: `sdd/01_planning/04_data/data_model.md`  
+시드 데이터: `sdd/99_toolchain/seed_data/code_and_presets.md`
 
 [[user-background]]

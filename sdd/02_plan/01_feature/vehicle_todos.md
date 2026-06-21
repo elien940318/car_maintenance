@@ -49,19 +49,19 @@
 
 > 진행 상태 표기: `[ ]` 미착수 / `[→]` 진행 중 / `[x]` 완료
 
-- [ ] `schema.prisma`: VehicleTypeCode 모델 정의 (code PK, label_ko, sort_order)
-- [ ] `schema.prisma`: FuelTypeCode 모델 정의 (code PK, label_ko, 적용 여부 플래그 5개[has_engine·has_spark_plug·has_glow_plug·has_dpf·has_hv_battery], sort_order)
-- [ ] `schema.prisma`: TransmissionTypeCode 모델 정의 (code PK, label_ko, sort_order)
-- [ ] `schema.prisma`: ManufacturerCode 모델 정의 (code PK, label_ko, sort_order) — #1 신규 코드테이블
-- [ ] `schema.prisma`: Vehicle 모델 정의
+- [x] `schema.prisma`: VehicleTypeCode 모델 정의 (code PK, label_ko, sort_order)
+- [x] `schema.prisma`: FuelTypeCode 모델 정의 (code PK, label_ko, 적용 여부 플래그 5개[has_engine·has_spark_plug·has_glow_plug·has_dpf·has_hv_battery], sort_order)
+- [x] `schema.prisma`: TransmissionTypeCode 모델 정의 (code PK, label_ko, sort_order)
+- [x] `schema.prisma`: ManufacturerCode 모델 정의 (code PK, label_ko, sort_order) — #1 신규 코드테이블
+- [x] `schema.prisma`: Vehicle 모델 정의
   - 기본 정보 필드: name(별칭), model_name, license_plate (engine_code는 삭제, #1)
   - `monthly_km`은 DB 저장 필드 (annual_km 변경 시 서비스 레이어에서 갱신)
   - FK: vehicle_type_code, fuel_type_code, transmission_code, manufacturer_code(nullable)
-- [ ] 마이그레이션 실행: `npx prisma migrate dev --name init-vehicle`
-- [ ] `seed.ts`: VehicleTypeCode 10개 값 적재
-- [ ] `seed.ts`: FuelTypeCode 6개 값 적재
-- [ ] `seed.ts`: TransmissionTypeCode 6개 값 적재
-- [ ] `seed.ts`: ManufacturerCode 7개 값 적재 (국산 6 + 기타)
+- [x] 마이그레이션 실행: `20260621103133_init` 완료
+- [x] `seed.ts`: VehicleTypeCode 10개 값 적재
+- [x] `seed.ts`: FuelTypeCode 6개 값 적재
+- [x] `seed.ts`: TransmissionTypeCode 6개 값 적재
+- [x] `seed.ts`: ManufacturerCode 7개 값 적재 (국산 6 + 기타)
 
 ### Phase 2 — Nest.js API
 
@@ -109,7 +109,7 @@
 
 ## 현재 작업 메모 (Current Notes)
 
-- 아직 미착수. Phase 0 완료 후 Phase 1부터 순서대로 진행.
+- **Phase 1 완료 (2026-06-21)**: schema.prisma 9개 엔티티 정의, 마이그레이션, seed.ts 적재, PrismaModule 등록.
 - `monthly_km` 는 DB에 저장하되 사용자 직접 입력 불가 — 서비스 레이어에서 annual_km 변경 시마다 재계산.
 - SCR-03 단계는 React Hook Form의 `useFormContext` + 스텝별 컴포넌트 분리 구조로 구현 예정.
 

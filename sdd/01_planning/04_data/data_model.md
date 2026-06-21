@@ -103,7 +103,7 @@ VehicleTypeCode ──< Vehicle >── FuelTypeCode
 | spark_plug | 스파크플러그 | engine | gasoline,lpg,hev,phev |
 | ignition_coil | 점화코일 | engine | gasoline,lpg,hev,phev |
 | glow_plug | 글로우플러그 | engine | diesel |
-| serpentine_belt | 구동벨트 | engine | gasoline,diesel,lpg,hev,phev |
+| serpentine_belt | 구동벨트(보조벨트) | engine | gasoline,diesel,lpg,hev,phev |
 | timing_chain | 타이밍체인 | chain | gasoline,hev,phev |
 | timing_belt | 타이밍벨트 | chain | gasoline,diesel |
 | air_filter | 에어클리너 | filter | gasoline,diesel,lpg,hev,phev |
@@ -133,7 +133,7 @@ VehicleTypeCode ──< Vehicle >── FuelTypeCode
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| id | uuid PK | ✓ | |
+| id | cuid PK | ✓ | |
 | part_key | string FK | ✓ | → MaintenancePartMaster |
 | fuel_type_code | string FK | ✓ | → FuelTypeCode |
 | transmission_code | string FK | - | → TransmissionTypeCode (null=모든 변속기 공통) |
@@ -161,7 +161,7 @@ WHERE fuel_type_code = :vehicleFuel
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| id | uuid PK | ✓ | |
+| id | cuid PK | ✓ | |
 | name | string | ✓ | 차량 별칭 (자유 입력, 예: `내 투싼`, `회사차`) |
 | model_name | string | - | 차량 모델명 (예: `투싼 NX4 하이브리드`) |
 | license_plate | string | - | 차량번호 (예: `123가 4567`) |
@@ -173,7 +173,7 @@ WHERE fuel_type_code = :vehicleFuel
 | current_km | int | ✓ | 현재 주행거리 (km) |
 | annual_km | int | ✓ | 연간 주행거리 (km/년) |
 | monthly_km | int | ✓ | 월 평균 주행거리 (내부 계산값). `annual_km / 12` (소수점 이하 반올림). 사용자에게 직접 입력 받지 않으며 `annual_km` 변경 시 자동 재계산. |
-| reference_date | date | ✓ | **주행거리 기준일** — current_km를 측정한 날. 모든 km↔날짜 환산의 기준점(ScheduleCalculator의 기준일 보정·이력 폴백에 사용). 차량 최초 등록일과는 무관. |
+| reference_date | datetime | ✓ | **주행거리 기준일** — current_km를 측정한 날. 모든 km↔날짜 환산의 기준점(ScheduleCalculator의 기준일 보정·이력 폴백에 사용). 차량 최초 등록일과는 무관. |
 | notes | string | - | 메모 |
 | created_at | datetime | ✓ | |
 | updated_at | datetime | ✓ | |
@@ -184,7 +184,7 @@ WHERE fuel_type_code = :vehicleFuel
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| id | uuid PK | ✓ | |
+| id | cuid PK | ✓ | |
 | vehicle_id | uuid FK | ✓ | → Vehicle |
 | part_key | string FK | - | → MaintenancePartMaster (수동 추가 시 null 가능) |
 | name | string | ✓ | 부품명 (프리셋에서 복사 또는 직접 입력) |
@@ -206,10 +206,10 @@ WHERE fuel_type_code = :vehicleFuel
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| id | uuid PK | ✓ | |
+| id | cuid PK | ✓ | |
 | part_id | uuid FK | ✓ | → MaintenancePart |
 | record_km | int | - | 교환 시 주행거리 (lkm) |
-| record_date | date | - | 교환 날짜 (ldt) |
+| record_date | datetime | - | 교환 날짜 (ldt) |
 | is_estimated_km | bool | ✓ | record_km이 누락 축 보간으로 채워진 값인지 (default false) |
 | is_estimated_date | bool | ✓ | record_date가 누락 축 보간으로 채워진 값인지 (default false) |
 | memo | string | - | 메모 |

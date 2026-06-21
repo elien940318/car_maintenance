@@ -44,7 +44,7 @@ carmaint/
 
 ## Project Status
 
-- **현재 단계**: 02_plan 완료 → **03_build(Phase 0) 착수 대기**
+- **현재 단계**: 03_build Phase 1 완료 → **Phase 2(Nest.js API) 착수 대기**
 - **기술 스택**: 확정 (Next.js + Nest.js + Prisma + SQLite + shadcn/ui + Zustand + TanStack Query)
 - **AC 총계**: 48개 (V10 + M15[M7 삭제] + VZ23)
 - **전체 현황**: `sdd/PROJECT_STATUS.md`

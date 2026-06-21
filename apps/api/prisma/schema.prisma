@@ -1,13 +1,173 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
+// Spring Boot 대응: @Entity 클래스들을 이 파일 하나에 선언한다.
+// prisma-client-js: SQLite 직접 연결 방식 (DEV 환경 전용)
+// Spring Boot 대응: @Entity 클래스들을 이 파일 하나에 선언한다.
+// Prisma 5: 어댑터 불필요, DATABASE_URL 환경변수에서 SQLite 경로를 읽음
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── 코드 테이블 (불변 참조 데이터 — Spring의 @Entity + 코드성 테이블) ──────────
+
+model VehicleTypeCode {
+  code       String @id
+  label_ko   String
+  sort_order Int
+
+  vehicles Vehicle[]
+}
+
+model FuelTypeCode {
+  code           String  @id
+  label_ko       String
+  has_engine     Boolean
+  has_spark_plug Boolean
+  has_glow_plug  Boolean
+  has_dpf        Boolean
+  has_hv_battery Boolean
+  sort_order     Int
+
+  vehicles Vehicle[]
+  presets  MaintenanceIntervalPreset[]
+}
+
+model TransmissionTypeCode {
+  code       String @id
+  label_ko   String
+  sort_order Int
+
+  vehicles Vehicle[]
+  presets  MaintenanceIntervalPreset[]
+}
+
+model ManufacturerCode {
+  code       String @id
+  label_ko   String
+  sort_order Int
+
+  vehicles Vehicle[]
+}
+
+// ─── 부품 마스터 (차량 독립 부품 정의) ──────────────────────────────────────────
+
+model MaintenancePartMaster {
+  part_key              String  @id
+  name_ko               String
+  // engine|chain|filter|trans|brake|cooling|hybrid|suspension
+  category              String
+  // 적용 가능 연료 코드 CSV (단일 진실원 #11 결정 2026-06-15)
+  // 예: "gasoline,diesel,hev" — 화면 필터(AC-VZ2)는 이 값만 참조
+  applicable_fuel_codes String
+  role_description      String?
+  tip_template          String?
+  svg_key               String?
+  sort_order            Int
+
+  presets MaintenanceIntervalPreset[]
+  parts   MaintenancePart[]
+}
+
+// ─── 정비 주기 프리셋 (제원 조합별 기본 주기) ────────────────────────────────────
+
+model MaintenanceIntervalPreset {
+  id                String  @id @default(cuid())
+  part_key          String
+  fuel_type_code    String
+  transmission_code String? // NULL = 모든 변속기 공통
+
+  // interval_km / interval_months 는 XOR (is_chain=true이면 둘 다 null)
+  interval_km     Int?
+  interval_months Int?
+  is_chain        Boolean @default(false)
+  note            String?
+
+  // Spring의 @ManyToOne 관계
+  part         MaintenancePartMaster @relation(fields: [part_key], references: [part_key])
+  fuel_type    FuelTypeCode          @relation(fields: [fuel_type_code], references: [code])
+  transmission TransmissionTypeCode? @relation(fields: [transmission_code], references: [code])
+
+  // (부품, 연료, 변속기) 조합 유일성 보장
+  @@unique([part_key, fuel_type_code, transmission_code])
+}
+
+// ─── 차량 (메인 애그리게이트 루트) ────────────────────────────────────────────────
+
+// Spring의 @Entity (최상위 도메인 객체)
+model Vehicle {
+  id                String   @id @default(cuid())
+  name              String   // 차량 별칭 (예: "내 투싼")
+  model_name        String?  // 차량 모델명 (예: "투싼 NX4 하이브리드")
+  license_plate     String?  // 차량번호
+  manufacturer_code String?
+  model_year        Int?
+  vehicle_type_code String
+  fuel_type_code    String
+  transmission_code String
+  current_km        Int      // 현재 주행거리
+  annual_km         Int      // 연간 주행거리
+  // monthly_km = round(annual_km / 12) — 서비스 레이어에서 자동 계산, 직접 입력 불가
+  monthly_km        Int
+  // ScheduleCalculator 기준일: current_km 을 측정한 날 (등록일과 무관)
+  reference_date    DateTime
+  notes             String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Spring의 @ManyToOne 관계들
+  vehicle_type VehicleTypeCode      @relation(fields: [vehicle_type_code], references: [code])
+  fuel_type    FuelTypeCode         @relation(fields: [fuel_type_code], references: [code])
+  transmission TransmissionTypeCode @relation(fields: [transmission_code], references: [code])
+  manufacturer ManufacturerCode?    @relation(fields: [manufacturer_code], references: [code])
+
+  // Spring의 @OneToMany
+  parts MaintenancePart[]
+}
+
+// ─── 차량별 부품 인스턴스 (프리셋 복사 또는 수동 추가) ──────────────────────────
+
+// Spring의 @Entity 자식 (Vehicle 1:N)
+model MaintenancePart {
+  id                  String   @id @default(cuid())
+  vehicle_id          String
+  part_key            String?  // 수동 추가 시 null 가능
+  name                String
+  sub_name            String?
+  category            String
+  interval_km         Int?     // pkm 방식 주기 (interval_months와 XOR)
+  interval_months     Int?     // pmo 방식 주기 (interval_km와 XOR)
+  is_chain            Boolean  @default(false)
+  is_vehicle_specific Boolean  @default(false)
+  tip                 String?
+  svg_key             String?
+  sort_order          Int?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  // onDelete: Cascade = 차량 삭제 시 부품도 함께 삭제 (Spring의 CascadeType.REMOVE)
+  vehicle Vehicle                @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  master  MaintenancePartMaster? @relation(fields: [part_key], references: [part_key])
+
+  records MaintenanceRecord[]
+}
+
+// ─── 정비 기록 (교환 이력) ───────────────────────────────────────────────────────
+
+// Spring의 @Entity 영속 이력 (불변 레코드)
+model MaintenanceRecord {
+  id                String    @id @default(cuid())
+  part_id           String
+  record_km         Int?      // 교환 시 주행거리 (lkm)
+  record_date       DateTime? // 교환 날짜 (ldt)
+  // 누락 축을 서비스 레이어에서 보간한 경우 true (계산 근거 추적용, #7 결정)
+  is_estimated_km   Boolean   @default(false)
+  is_estimated_date Boolean   @default(false)
+  memo              String?
+  created_at        DateTime  @default(now())
+
+  part MaintenancePart @relation(fields: [part_id], references: [id], onDelete: Cascade)
 }
