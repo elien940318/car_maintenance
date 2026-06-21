@@ -65,14 +65,25 @@
 
 ### Phase 2 — Nest.js API
 
-- [x] `PrismaService` 작성 및 `AppModule` imports 등록 (Phase 1 완료)
+- [x] `PrismaService` 작성 및 `AppModule` imports 등록
+  - Spring Boot의 `@Repository` 역할: PrismaClient를 `@Injectable()`로 래핑
 - [x] `VehicleModule` 생성
-  - [x] `VehicleController`: GET /vehicle, POST /vehicle, PATCH /vehicle/:id
-  - [x] `VehicleService`: create·findOne·update·calcMonthlyKm
-  - [x] `CreateVehicleDto`: class-validator (@Min, @IsString 등)
+  - [x] `VehicleController`
+    - `GET  /vehicle` — 단일 차량 조회 (없으면 404)
+    - `POST /vehicle` — 차량 등록 (1대 제한 검증)
+    - `PATCH /vehicle/:id` — 차량 수정
+  - [x] `VehicleService`
+    - `create()`: 기등록 차량 존재 시 ConflictException
+    - `findOne()`: 차량 미존재 시 NotFoundException
+    - `update()`: current_km·annual_km 변경 시 monthly_km 재계산
+    - `calcMonthlyKm(annualKm)`: `Math.round(annualKm / 12)`
+  - [x] `CreateVehicleDto`: class-validator 유효성 검사 데코레이터 적용
+    - `annual_km` `@Min(1)` (monthly_km 0 나눗셈 방어, #8), `current_km` `@Min(0)`
   - [x] `UpdateVehicleDto`: PartialType(CreateVehicleDto)
-- [x] `PresetModule` — GET /presets?fuelCode=&transCode= (AC-V6, V7)
-- [x] 전역 ValidationPipe (`main.ts`): whitelist=true, transform=true
+- [x] `PresetModule` (또는 VehicleModule 내 엔드포인트)
+  - `GET /presets?fuelCode=&transCode=` — MaintenanceIntervalPreset 조회 (AC-V6, V7)
+  - 쿼리 조건: `fuel_type_code = fuelCode AND (transmission_code IS NULL OR transmission_code = transCode)`
+- [x] 전역 ValidationPipe 설정 (`main.ts`): `app.useGlobalPipes(new ValidationPipe())`
 
 ### Phase 3 — Next.js UI
 

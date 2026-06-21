@@ -77,21 +77,42 @@
 #### ScheduleCalculator (순수 도메인 함수)
 
 - [x] `src/schedule/schedule-calculator.ts` 작성
-  - [x] adjustCurrentKm / resolveBaseline / calcPkmNextKm / calcPkmNextDate / calcPmoNextDate / calcPmoNextKm / classifyStatus / computePartSchedule 전체 구현
-- [x] ScheduleCalculator 단위 테스트 22개 — Jest PASS (AC-M2·M5·M6·M8·M9 커버)
+  - [x] `adjustCurrentKm(currentKm, referenceDate, today, monthlyKm)` → 기준일 보정 `current_km_today` (today=ref면 보정 0)
+  - [x] `resolveBaseline(lastKm, lastDate, vehicle)` → 이력 null 시 폴백 기준점(`{lastKm, lastDate, baseline:'estimated'}`), 존재 시 `'recorded'`
+  - [x] `calcPkmNextKm(lkm, pkm)` → `next_km = lkm + pkm`
+  - [x] `calcPkmNextDate(nextKm, curKmToday, monthlyKm)` → `next_date = today + (nextKm - curKmToday) / monthlyKm × 30`
+  - [x] `calcPmoNextDate(ldt, pmo)` → `next_date = ldt + pmo개월` (date-fns addMonths)
+  - [x] `calcPmoNextKm(curKmToday, monthlyKm, nextDate)` → `next_km = curKmToday + monthsDiff(today, nextDate) × monthlyKm`
+  - [x] `classifyStatus(daysRemaining, isChain, monthlyKm)` → `'urgent' | 'soon' | 'ok' | 'chain' | 'unknown'`
+    - is_chain → 'chain' / monthlyKm<1 → 'unknown' / 그 외 일수 분류
+  - [x] `computePartSchedule(part, lastRecord, vehicle)` → `{ nextKm, nextDate, daysRemaining, status, baseline }`
+    - 처리 순서: chain → unknown 가드 → 기준일 보정 → 이력 폴백 → pkm/pmo 분기 → 상태 분류
+- [x] ScheduleCalculator 단위 테스트 작성 (Jest)
+  - test_strategy.md의 8개 핵심 케이스 커버 (`pkm 정상`, `pmo 정상`, `isChain`, `초과`, `경계값 45/91/181일`) — 22개 PASS
 
 #### AlertAggregator
 
-- [x] `src/schedule/alert-aggregator.ts` — urgent/soon 항목 nextDate 오름차순 반환 (AC-M10)
+- [x] `src/schedule/alert-aggregator.ts` 작성
+  - `aggregateAlerts(parts, vehicle)` → urgent/soon 항목 예정일 오름차순 배열 반환 (AC-M10)
 
 #### MaintenanceModule
 
-- [x] `src/maintenance/maintenance.module.ts`
-- [x] `MaintenanceController`: GET /parts, POST /parts, PATCH /parts/:id, POST /parts/:id/records
-- [x] `MaintenanceService`: findByVehicle, createPart, updatePart, createRecord, validateXOR, validateRecord, interpolateRecord
-- [x] `CreateMaintenancePartDto`: @ValidateIf XOR 검증 (AC-M3)
-- [x] `UpdateMaintenancePartDto`: PartialType
-- [x] `RecordCompletionDto`: record_km, record_date optional (서비스 레이어 하나 필수 검증)
+- [x] `src/maintenance/maintenance.module.ts` 생성
+- [x] `MaintenanceController`
+  - `GET  /vehicles/:vehicleId/parts` — 차량별 정비 항목 목록 (계산값 포함)
+  - `POST /vehicles/:vehicleId/parts` — 정비 항목 수동 등록
+  - `PATCH /vehicles/:vehicleId/parts/:partId` — 주기·팁 수정
+  - `POST /vehicles/:vehicleId/parts/:partId/records` — 교환완료 단건 (AC-M12, M13)
+- [x] `MaintenanceService`
+  - `findByVehicle()`: 각 항목에 ScheduleCalculator 적용한 read model 반환
+  - `createRecord()`: 누락 축 보간(`interpolateRecord()`) → MaintenanceRecord 저장 → 해당 Part 상태 재계산 반환
+  - `interpolateRecord()`: record_km/record_date 중 하나만 입력 시 vehicle 보정값으로 나머지 계산, `is_estimated_*=true` 표시 (#7)
+  - `validateXOR()`: interval_km과 interval_months 동시 입력 시 BadRequestException (AC-M3)
+  - `validateRecord()`: record_km, record_date 둘 다 없으면 BadRequestException
+- [x] DTO 작성
+  - `CreateMaintenancePartDto`: pkm/pmo XOR 검증 (class-validator `@ValidateIf`)
+  - `UpdateMaintenancePartDto`: PartialType(CreateMaintenancePartDto)
+  - `RecordCompletionDto`: record_km, record_date (둘 다 optional이나 하나 필수)
 
 ### Phase 3 — Next.js UI
 

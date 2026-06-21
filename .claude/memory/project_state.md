@@ -9,7 +9,7 @@ metadata:
 
 ## 현재 단계
 
-**03_build Phase 1 완료 → Phase 2(Nest.js API) 착수 대기** (2026-06-21 기준)
+**03_build Phase 2 완료 → Phase 3(Next.js UI) 착수 대기** (2026-06-21 기준)
 
 전체 현황 문서: `sdd/PROJECT_STATUS.md`
 
@@ -107,17 +107,23 @@ metadata:
 
 ---
 
-## 다음 세션 작업: Phase 2 — Nest.js API
+## Phase 2 완료 (2026-06-21)
 
-1. VehicleModule (VehicleController / VehicleService / DTO)
-   - `GET /vehicle`, `POST /vehicle`, `PATCH /vehicle/:id`
-   - 차량 1대 제한, monthly_km 자동 계산
-2. ScheduleCalculator (순수 도메인 함수, TDD)
-3. MaintenanceModule (MaintenanceController / MaintenanceService / DTO)
-   - `GET /vehicles/:id/parts`, `POST .../records`
-   - 누락 축 보간(interpolateRecord), XOR 검증
-4. PresetModule — `GET /presets?fuelCode=&transCode=`
+- VehicleModule: GET/POST/PATCH /vehicle, ConflictException(1대 제한), monthly_km 자동 계산
+- PresetModule: GET /presets?fuelCode=&transCode=
+- ValidationPipe 전역 (whitelist=true, transform=true)
+- ScheduleCalculator: 순수 함수 8개 + Jest 단위 테스트 22개 PASS
+- AlertAggregator: urgent/soon 항목 nextDate 오름차순
+- MaintenanceModule: CRUD + createRecord(누락 축 보간)
 
-상세: `sdd/02_plan/01_feature/vehicle_todos.md`, `maintenance_todos.md`
+## 다음 세션 작업: Phase 3 — Next.js UI
+
+화면 명세: `sdd/01_planning/02_screen/screen_spec.md`
+- SCR-01: 메인 대시보드 (간트 차트 + 티켓 카드, 640px 반응형 분기)
+- SCR-02: 부품 상세 패널 / 바텀 시트 + 교환완료 인라인 입력
+- SCR-03: 차량 등록·수정 4단계 폼 (React Hook Form + useFormContext)
+- 빈 상태 화면 (차량 미등록 → EmptyState → SCR-03)
+
+상세: `sdd/02_plan/01_feature/vehicle_todos.md`, `maintenance_todos.md` Phase 3 섹션
 
 [[user-background]]
