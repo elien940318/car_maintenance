@@ -15,8 +15,8 @@ async function bootstrap() {
     process.env.DATABASE_URL = `file:${abs}`;
   }
   const app = await NestFactory.create(AppModule);
-  // Next.js(3000) → API(3001) 브라우저 cross-origin 요청 허용
-  app.enableCors({ origin: 'http://localhost:3000' });
+  // DEV: 같은 Wi-Fi 내 모바일 테스트 포함 전체 origin 허용
+  app.enableCors({ origin: true });
   // Spring의 @Valid + BindingResult 역할: DTO class-validator 데코레이터를 전역 활성화
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.listen(process.env.PORT ?? 3000);

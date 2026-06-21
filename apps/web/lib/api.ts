@@ -7,7 +7,11 @@ import type {
   Vehicle,
 } from './types';
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+// 브라우저 접속 호스트 기준으로 API 주소 결정 (같은 PC: localhost, 모바일: 노트북 IP 자동 사용)
+const BASE =
+  typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:3001`
+    : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001');
 
 interface ApiError extends Error {
   status: number;
